@@ -1,0 +1,67 @@
+# Installing MongoDB on Manjaro
+$ git clone https://aur.archlinux.org/mongodb-bin.git
+$ cd mongo-bin
+$ makepkg -si
+$ systemctl start mongodb
+$ systemctl enable mongodb
+
+# Utilização
+$ mongo
+	> (mongodb-cli)
+
+# Comandos
+> use CBD_Aula2_1
+> db
+	> test
+> db.test.insert({"teste": "ola"})
+> db.test.drop()
+> db.simple.insertMany([{"nome": "filipe"}, {"nome": "goncalo"}, {"nome": "Pedro"}, {"nome": "borges"}])
+	> {
+		"acknowledged" : true,
+		"insertedIds" : [
+			ObjectId("617a6cf98ae91ed998b31c4a"),
+			ObjectId("617a6cf98ae91ed998b31c4b"),
+			ObjectId("617a6cf98ae91ed998b31c4c"),
+			ObjectId("617a6cf98ae91ed998b31c4d")
+		]
+	  }
+> db.simple.count()
+	> 4
+> db.simple.find()
+	> { "_id" : ObjectId("617a6cf98ae91ed998b31c4a"), "nome" : "filipe" }
+	  { "_id" : ObjectId("617a6cf98ae91ed998b31c4b"), "nome" : "goncalo" }
+	  { "_id" : ObjectId("617a6cf98ae91ed998b31c4c"), "nome" : "Pedro" }
+	  { "_id" : ObjectId("617a6cf98ae91ed998b31c4d"), "nome" : "borges" }
+> db.simple.findOne({"nome": "Pedro"})
+	> { "_id" : ObjectId("617a6cf98ae91ed998b31c4c"), "nome" : "Pedro" }
+> show collections.simple
+> db.simple.findOne({$or:[ {"nome": "Pedro"}, {"nome": "filipe"}]})
+	> { "_id" : ObjectId("617a6cf98ae91ed998b31c4a"), "nome" : "filipe" }
+> db.simple.find({}, {"nome": 1, _id:0})
+	> { "nome" : "filipe" }
+	  { "nome" : "goncalo" }
+	  { "nome" : "Pedro" }
+	  { "nome" : "borges" }
+> db.simple.find({}, {"nome": 1, _id:0}).sort({"nome":-1})
+	> { "nome" : "goncalo" }
+	  { "nome" : "filipe" }
+	  { "nome" : "borges" }
+	  { "nome" : "Pedro" }
+> db.simple.createIndex({"nome": 1})
+	> {
+		"numIndexesBefore" : 1,
+		"numIndexesAfter" : 2,
+		"createdCollectionAutomatically" : false,
+		"ok" : 1
+	  }	
+> db.simple.remove({"nome": "borges"})
+	> WriteResult({ "nRemoved" : 1 })
+> db.simple.update({"nome": "goncalo"},{$set: {"nome": "filipe"}})
+	> WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+> db.simple.find()
+	> { "_id" : ObjectId("617a6cf98ae91ed998b31c4a"), "nome" : "filipe" }
+	  { "_id" : ObjectId("617a6cf98ae91ed998b31c4b"), "nome" : "filipe" }
+	  { "_id" : ObjectId("617a6cf98ae91ed998b31c4c"), "nome" : "Pedro" }
+> db.simple.aggregate([{$group: {_id:"$nome", all_nome : {$sum : 1}}}])
+	> { "_id" : "filipe", "all_nome" : 2 }
+	  { "_id" : "Pedro", "all_nome" : 1 }

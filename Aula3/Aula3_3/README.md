@@ -1,0 +1,2 @@
+Feito com cassandra em Docker e não deu para correr por não conseguir encontrar nenhum ponto de conexão (Could not reach any contact point, make sure you've provided valid addresses (showing first 1, use getErrors() for more: /127.0.0.1:9042), (testado com diversos ports diferentes).
+O professor Carlos Costa sabe do problema, mas não foi possível encontrar solução para o resolver.

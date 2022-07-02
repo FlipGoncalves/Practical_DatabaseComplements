@@ -1,0 +1,89 @@
+// create KEYSPACE "first_keyspace" WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 2};
+// create KEYSPACE "second_keyspace" WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+
+// describe KEYSPACE first_keyspace;
+// describe KEYSPACE second_keyspace;
+
+// select * from system_schema.keyspaces;
+ keyspace_name      | durable_writes | replication
+--------------------+----------------+-------------------------------------------------------------------------------------
+        system_auth |           True | {'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '1'}
+      system_schema |           True |                             {'class': 'org.apache.cassandra.locator.LocalStrategy'}
+ system_distributed |           True | {'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '3'}
+             system |           True |                             {'class': 'org.apache.cassandra.locator.LocalStrategy'}
+    second_keyspace |           True | {'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '1'}
+     first_keyspace |           True | {'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '2'}
+      system_traces |           True | {'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '2'}
+
+// use first_keyspace;
+// drop KEYSPACE second_keyspace ;
+// CREATE TABLE emp(
+        emp_id int PRIMARY KEY,
+        emp_name text,
+        emp_city text,
+        emp_sal varint,
+        emp_phone varint
+    );
+// ALTER TABLE emp ADD emp_email text;
+
+// DESCRIBE emp;
+CREATE TABLE first_keyspace.emp (
+    emp_id int PRIMARY KEY,
+    emp_city text,
+    emp_email text,
+    emp_name text,
+    emp_phone varint,
+    emp_sal varint
+) WITH additional_write_policy = '99p'
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = {'keys': 'ALL', 'rows_per_partition': 'NONE'}
+    AND cdc = false
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4'}
+    AND compression = {'chunk_length_in_kb': '16', 'class': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND crc_check_chance = 1.0
+    AND default_time_to_live = 0
+    AND extensions = {}
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair = 'BLOCKING'
+    AND speculative_retry = '99p';
+
+// selec * from emp;
+ emp_id | emp_city | emp_email | emp_name | emp_phone | emp_sal
+--------+----------+-----------+----------+-----------+---------
+(0 rows)
+
+// INSERT INTO emp (emp_id, emp_name, emp_city, emp_phone, emp_sal) VALUES(1,'ram', 'Hyderabad', 9848022338, 50000);
+
+// SELECT * FROM emp;
+ emp_id | emp_city  | emp_email | emp_name | emp_phone  | emp_sal
+--------+-----------+-----------+----------+------------+---------
+      1 | Hyderabad |      null |      ram | 9848022338 |   50000
+(1 rows)
+
+// CREATE TABLE data(name text PRIMARY KEY, email list<text>);
+// INSERT INTO data(name, email) VALUES ('ramu',['abc@gmail.com','cba@yahoo.com'])
+// UPDATE data SET email = email +['xyz@tutorialspoint.com'] where name = 'ramu';
+
+// SELECT * FROM data;
+ name | email
+------+--------------------------------------------------------------
+ ramu | ['abc@gmail.com', 'cba@yahoo.com', 'xyz@tutorialspoint.com']
+(1 rows)
+
+// CREATE TABLE data2 (name text PRIMARY KEY, phone set<varint>);
+// INSERT INTO data2(name, phone)VALUES ('rahman', {9848022338,9848022339});
+// UPDATE data2 SET phone = phone + {9848022330} where name = 'rahman';
+
+// SELECT * FROM data2;
+ name   | phone
+--------+--------------------------------------
+ rahman | {9848022330, 9848022338, 9848022339}
+(1 rows)
+
+// CREATE TABLE data3 (name text PRIMARY KEY, address map<timestamp, text>);
+// INSERT INTO data3 (name, address) VALUES ('robin', {'home' : 'hyderabad' , 'office' : 'Delhi' } );
+// UPDATE data3 SET address = address+{'office':'mumbai'} WHERE name = 'robin';

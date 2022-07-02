@@ -1,0 +1,206 @@
+### A ###
+
+# Entidades
+Person - svn_id, real_name, organization
+Project - project_name
+
+# Relações
+Participates [Person->Project] - num, role_on_project
+
+
+### B ###
+
+CREATE CONSTRAINT ON (project:Project) ASSERT project.project_name IS UNIQUE
+CREATE CONSTRAINT ON (person:Person) ASSERT person.svn_id IS UNIQUE
+
+LOAD CSV WITH HEADERS FROM 'file:///git_selection.csv' AS line
+MERGE (person:Person {svn_id: line.svn_id})
+SET person.real_name=line.real_name, person.organization=line.organization
+MERGE (project:Project {project_name: line.project_name})
+
+LOAD CSV WITH HEADERS FROM 'file:///git_selection.csv' AS line
+MATCH (person:Person {svn_id: line.svn_id}), (project:Project {project_name: line.project_name})
+CREATE (person)-[:PARTICIPATES {num:line.num, role_on_project:line.role_on_project}]->(project)
+
+
+### C ###
+
+#1 - match (n:Person) return n
+(Não mostro tudo porque seriam 2500 linhas de tabela)
+╒══════════════════════════════════════════════════════════════════════╕
+│"n"                                                                   │
+╞══════════════════════════════════════════════════════════════════════╡
+│{"svn_id":"aa0380","organization":"IBM","real_name":"Aaron Mulder"}   │
+├──────────────────────────────────────────────────────────────────────┤
+│{"svn_id":"ammulder","organization":"Chariot Solutions ","real_name":"│
+│Aaron Mulder"}                                                        │
+├──────────────────────────────────────────────────────────────────────┤
+│{"svn_id":"atm","organization":"Cloudera ","real_name":"Aaron T. Myers│
+│"}                                                                    │
+├──────────────────────────────────────────────────────────────────────┤
+│{"svn_id":"ab0625","organization":"Oracle Corporation","real_name":"Ab│
+│e White"}                                                             │
+├──────────────────────────────────────────────────────────────────────┤
+│{"svn_id":"ab0633","organization":"Oracle Corporation","real_name":"Ab│
+│e White"}                                                             │
+├──────────────────────────────────────────────────────────────────────┤
+│{"svn_id":"ab1632","organization":"Oracle Corporation ","real_name":"A│
+│be White"}                                                            │
+├──────────────────────────────────────────────────────────────────────┤
+│{"svn_id":"ab1651","organization":"Oracle Corporation ","real_name":"A│
+│be White"}                                                            │
+├──────────────────────────────────────────────────────────────────────┤
+│{"svn_id":"ab2578","organization":"Oracle","real_name":"Abe White"}   │
+├──────────────────────────────────────────────────────────────────────┤
+
+#2 - match(person:Person) return person.real_name
+╒═══════════════════════════════════╕
+│"person.real_name"                 │
+╞═══════════════════════════════════╡
+│"Aaron Mulder"                     │
+├───────────────────────────────────┤
+│"Aaron Mulder"                     │
+├───────────────────────────────────┤
+│"Aaron T. Myers"                   │
+├───────────────────────────────────┤
+│"Abe White"                        │
+├───────────────────────────────────┤
+│"Abe White"                        │
+├───────────────────────────────────┤
+│"Abe White"                        │
+├───────────────────────────────────┤
+│"Abe White"                        │
+├───────────────────────────────────┤
+│"Abe White"                        │
+├───────────────────────────────────┤
+
+#3 - match (project:Project)<-[rel:PARTICIPATES]-() with project, count(rel) as relation_count where relation_count >= 1 return project
+╒═══════════════════════════════════════════════╕
+│"project"                                      │
+╞═══════════════════════════════════════════════╡
+│{"project_name":"Apache Geronimo"}             │
+├───────────────────────────────────────────────┤
+│{"project_name":"Geronimo"}                    │
+├───────────────────────────────────────────────┤
+│{"project_name":"ActiveMQ"}                    │
+├───────────────────────────────────────────────┤
+│{"project_name":"Apache ActiveMQ"}             │
+├───────────────────────────────────────────────┤
+│{"project_name":"Apache Camel"}                │
+├───────────────────────────────────────────────┤
+│{"project_name":"Camel"}                       │
+├───────────────────────────────────────────────┤
+│{"project_name":"Apache Hadoop"}               │
+├───────────────────────────────────────────────┤
+│{"project_name":"Hadoop"}                      │
+├───────────────────────────────────────────────┤
+│{"project_name":"Apache OpenJPA"}              │
+├───────────────────────────────────────────────┤
+
+#4 - match (person:Person)-[rel:PARTICIPATES]->() with person, count(rel) as project_count return person.real_name, project_count
+╒══════════════════════════════════════════════════════════════════════╤═══════════════╕
+│"person"                                                              │"project_count"│
+╞══════════════════════════════════════════════════════════════════════╪═══════════════╡
+│{"svn_id":"aa0380","organization":"IBM","real_name":"Aaron Mulder"}   │1              │
+├──────────────────────────────────────────────────────────────────────┼───────────────┤
+│{"svn_id":"ammulder","organization":"Chariot Solutions ","real_name":"│8              │
+│Aaron Mulder"}                                                        │               │
+├──────────────────────────────────────────────────────────────────────┼───────────────┤
+│{"svn_id":"atm","organization":"Cloudera ","real_name":"Aaron T. Myers│5              │
+│"}                                                                    │               │
+├──────────────────────────────────────────────────────────────────────┼───────────────┤
+│{"svn_id":"ab0625","organization":"Oracle Corporation","real_name":"Ab│1              │
+│e White"}                                                             │               │
+├──────────────────────────────────────────────────────────────────────┼───────────────┤
+
+#5 - match (person:Person)-[rel:PARTICIPATES]->() with person, count(rel) as project_count return person.real_name, project_count order by project_count DESC
+╒═════════════════════════════════╤═══════════════╕
+│"person.real_name"               │"project_count"│
+╞═════════════════════════════════╪═══════════════╡
+│"David Jencks"                   │26             │
+├─────────────────────────────────┼───────────────┤
+│"James Strachan"                 │24             │
+├─────────────────────────────────┼───────────────┤
+│"Daniel Rall"                    │20             │
+├─────────────────────────────────┼───────────────┤
+│"Guillaume Nodet"                │19             │
+├─────────────────────────────────┼───────────────┤
+│"Jean-Baptiste Onofre"           │19             │
+├─────────────────────────────────┼───────────────┤
+│"Owen O'Malley"                  │18             │
+├─────────────────────────────────┼───────────────┤
+│"Ioannis Canellos"               │16             │
+├─────────────────────────────────┼───────────────┤
+│"Devaraj Das"                    │16             │
+├─────────────────────────────────┼───────────────┤
+
+#6 - match ()-[rel:PARTICIPATES]->(project:Project) with project, count(rel) as users_count return project, users_count
+╒═══════════════════════════════════════════════╤═════════════╕
+│"project"                                      │"users_count"│
+╞═══════════════════════════════════════════════╪═════════════╡
+│{"project_name":"Apache Geronimo"}             │117          │
+├───────────────────────────────────────────────┼─────────────┤
+│{"project_name":"Geronimo"}                    │42           │
+├───────────────────────────────────────────────┼─────────────┤
+│{"project_name":"ActiveMQ"}                    │82           │
+├───────────────────────────────────────────────┼─────────────┤
+│{"project_name":"Apache ActiveMQ"}             │27           │
+├───────────────────────────────────────────────┼─────────────┤
+│{"project_name":"Apache Camel"}                │87           │
+├───────────────────────────────────────────────┼─────────────┤
+│{"project_name":"Camel"}                       │52           │
+├───────────────────────────────────────────────┼─────────────┤
+│{"project_name":"Apache Hadoop"}               │186          │
+├───────────────────────────────────────────────┼─────────────┤
+│{"project_name":"Hadoop"}                      │75           │
+├───────────────────────────────────────────────┼─────────────┤
+
+#7 - match ()-[rel:PARTICIPATES]->(project:Project) with project, count(rel.role_on_project = "Commiter") as users_count return project, users_count
+╒═══════════════════════════════════════════════╤═════════════╕
+│"project"                                      │"users_count"│
+╞═══════════════════════════════════════════════╪═════════════╡
+│{"project_name":"Apache Geronimo"}             │117          │
+├───────────────────────────────────────────────┼─────────────┤
+│{"project_name":"Geronimo"}                    │42           │
+├───────────────────────────────────────────────┼─────────────┤
+│{"project_name":"ActiveMQ"}                    │82           │
+├───────────────────────────────────────────────┼─────────────┤
+│{"project_name":"Apache ActiveMQ"}             │27           │
+├───────────────────────────────────────────────┼─────────────┤
+│{"project_name":"Apache Camel"}                │87           │
+├───────────────────────────────────────────────┼─────────────┤
+│{"project_name":"Camel"}                       │52           │
+├───────────────────────────────────────────────┼─────────────┤
+│{"project_name":"Apache Hadoop"}               │186          │
+├───────────────────────────────────────────────┼─────────────┤
+│{"project_name":"Hadoop"}                      │75           │
+├───────────────────────────────────────────────┼─────────────┤
+
+#8 - match (user:Person)-[rel:PARTICIPATES]->(project:Project)<-[:PARTICIPATES]-(atm:Person {svn_id: "atm"}) return atm.real_name, user.real_name, project.project_name
+╒════════════════╤═════════════════════════╤══════════════════════╕
+│"atm.real_name" │"user.real_name"         │"project.project_name"│
+╞════════════════╪═════════════════════════╪══════════════════════╡
+│"Aaron T. Myers"│"Harsh J"                │"Apache Hadoop"       │
+├────────────────┼─────────────────────────┼──────────────────────┤
+│"Aaron T. Myers"│"Dhruba Borthakur"       │"Apache Hadoop"       │
+├────────────────┼─────────────────────────┼──────────────────────┤
+│"Aaron T. Myers"│"Jonathan Eagles"        │"Apache Hadoop"       │
+├────────────────┼─────────────────────────┼──────────────────────┤
+│"Aaron T. Myers"│"Jonathan Eagles"        │"Apache Hadoop"       │
+├────────────────┼─────────────────────────┼──────────────────────┤
+│"Aaron T. Myers"│"Konstantin Boudnik"     │"Apache Hadoop"       │
+├────────────────┼─────────────────────────┼──────────────────────┤
+│"Aaron T. Myers"│"Tsz Wo (Nicholas) Sze"  │"Apache Hadoop"       │
+├────────────────┼─────────────────────────┼──────────────────────┤
+│"Aaron T. Myers"│"Kihwal Lee"             │"Apache Hadoop"       │
+├────────────────┼─────────────────────────┼──────────────────────┤
+│"Aaron T. Myers"│"Dhruba Borthakur"       │"Apache Hadoop"       │
+├────────────────┼─────────────────────────┼──────────────────────┤
+│"Aaron T. Myers"│"Sanjay Radia"           │"Apache Hadoop"       │
+├────────────────┼─────────────────────────┼──────────────────────┤
+│"Aaron T. Myers"│"Sharad Agarwal"         │"Apache Hadoop"       │
+├────────────────┼─────────────────────────┼──────────────────────┤
+│"Aaron T. Myers"│"Koji Noguchi"           │"Apache Hadoop"       │
+├────────────────┼─────────────────────────┼──────────────────────┤
+
+#9 - match (user:Person)-[:PARTICIPATES {role_on_project: "Commiter"}]->(project:Project)<-[:PARTICIPATES {role_on_project: "PMC"}]-(atm:Person {svn_id: "atm"}) return atm.real_name, user.real_name, project.project_name

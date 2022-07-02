@@ -1,0 +1,536 @@
+### Movie Graph
+
+$ :play movie-graph
+
+$ match (tom {name: "Tom Hanks"}) return tom
+Node labels
+* (1)Person (1)
+Displaying 1 nodes, 0 relationships.
+
+$ match (cloudAtlas {title: "Cloud Atlas"}) return cloudAtlas
+Node labels
+* (1)Movie (1)
+Displaying 1 nodes, 0 relationships.
+
+$ match (n) return n
+Node labels
+* (171)Movie (38)Person (133)
+Relationship Types
+* (253)ACTED_IN (172)DIRECTED (44)PRODUCED (15)WROTE (10)FOLLOWS (3)REVIEWED (9)
+Displaying 171 nodes, 0 relationships.
+
+$ match (n) with count(n) AS numVertices match (a)-[e]->(b) return numVertices, count(e) AS numEdges
+numVertices	    numEdges
+171	            253
+
+$ match (n) return labels(n) as labels, keys(n) as keys, count(*) as total order by total desc
+labels	        keys	                            total
+["Person"]	    ["born", "name"]	                128
+["Movie"]	    ["released", "tagline", "title"]	12
+["Movie"]	    ["title", "tagline", "released"]	9
+["Movie"]	    ["tagline", "title", "released"]	8
+["Movie"]	    ["title", "released", "tagline"]	8
+["Person"]	    ["name"]	                        5
+["Movie"]   	["title", "released"]	            1
+
+$ match (m)-[r]->(n) return labels(m), type(r), labels(n), count(*) as total order by total desc
+labels(m)	type(r)	    labels(n)	total
+["Person"]	"ACTED_IN"	["Movie"]	172
+["Person"]	"DIRECTED"	["Movie"]	44
+["Person"]	"PRODUCED"	["Movie"]	15
+["Person"]	"WROTE"	    ["Movie"]	10
+["Person"]	"REVIEWED"	["Movie"]	9
+["Person"]	"FOLLOWS"	["Person"]	3
+
+$ match ()-[r]->() return type(r) as type, keys(r) as keys, count(*) as total order by type
+type	    keys	                total
+"ACTED_IN"	["roles"]	            172
+"DIRECTED"	[]	                    44
+"FOLLOWS"	[]	                    3
+"PRODUCED"	[]	                    15
+"REVIEWED"	["summary", "rating"]	7
+"REVIEWED"	["rating", "summary"]	2
+"WROTE"	    []	                    10
+
+
+
+### Cyphers
+// NMEC: 98083
+
+#1 - match (actors:Person)-[:ACTED_IN]->(movie:Movie)<-[:DIRECTED]-(directors:Person) where actors.name = directors.name return actors.name, movie.title
+╒════════════════╤═══════════════════╕
+│"actors.name"   │"movie.title"      │
+╞════════════════╪═══════════════════╡
+│"Tom Hanks"     │"That Thing You Do"│
+├────────────────┼───────────────────┤
+│"Clint Eastwood"│"Unforgiven"       │
+├────────────────┼───────────────────┤
+│"Danny DeVito"  │"Hoffa"            │
+└────────────────┴───────────────────┘
+
+#2 - match (actors:Person)-[ACTED_IN]->(movie:Movie) where movie.released > 2005 return actors, movie.title
+╒═════════════════════════════════════════════╤══════════════════════╕
+│"actors"                                     │"movie.title"         │
+╞═════════════════════════════════════════════╪══════════════════════╡
+│{"born":1954,"name":"Zach Grenier"}          │"RescueDawn"          │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1967,"name":"Steve Zahn"}            │"RescueDawn"          │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1942,"name":"Werner Herzog"}         │"RescueDawn"          │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1974,"name":"Christian Bale"}        │"RescueDawn"          │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1942,"name":"Marshall Bell"}         │"RescueDawn"          │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1956,"name":"Tom Hanks"}             │"Cloud Atlas"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1949,"name":"Jim Broadbent"}         │"Cloud Atlas"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1969,"name":"David Mitchell"}        │"Cloud Atlas"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1965,"name":"Tom Tykwer"}            │"Cloud Atlas"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1965,"name":"Lana Wachowski"}        │"Cloud Atlas"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1961,"name":"Stefan Arndt"}          │"Cloud Atlas"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"name":"Jessica Thompson"}                  │"Cloud Atlas"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1966,"name":"Halle Berry"}           │"Cloud Atlas"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1960,"name":"Hugo Weaving"}          │"Cloud Atlas"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1967,"name":"Lilly Wachowski"}       │"Cloud Atlas"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1956,"name":"Tom Hanks"}             │"The Da Vinci Code"   │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"name":"Jessica Thompson"}                  │"The Da Vinci Code"   │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"name":"James Thompson"}                    │"The Da Vinci Code"   │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1954,"name":"Ron Howard"}            │"The Da Vinci Code"   │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1939,"name":"Ian McKellen"}          │"The Da Vinci Code"   │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1976,"name":"Audrey Tautou"}         │"The Da Vinci Code"   │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1971,"name":"Paul Bettany"}          │"The Da Vinci Code"   │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1965,"name":"Lana Wachowski"}        │"V for Vendetta"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1967,"name":"Lilly Wachowski"}       │"V for Vendetta"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1965,"name":"Lana Wachowski"}        │"V for Vendetta"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1940,"name":"John Hurt"}             │"V for Vendetta"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1952,"name":"Joel Silver"}           │"V for Vendetta"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1946,"name":"Stephen Rea"}           │"V for Vendetta"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1967,"name":"Lilly Wachowski"}       │"V for Vendetta"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1981,"name":"Natalie Portman"}       │"V for Vendetta"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1960,"name":"Hugo Weaving"}          │"V for Vendetta"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1967,"name":"James Marshall"}        │"V for Vendetta"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1967,"name":"Ben Miles"}             │"V for Vendetta"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1965,"name":"Lana Wachowski"}        │"Speed Racer"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1985,"name":"Emile Hirsch"}          │"Speed Racer"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1967,"name":"Lilly Wachowski"}       │"Speed Racer"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1952,"name":"Joel Silver"}           │"Speed Racer"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1982,"name":"Rain"}                  │"Speed Racer"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1980,"name":"Christina Ricci"}       │"Speed Racer"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1967,"name":"Ben Miles"}             │"Speed Racer"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1965,"name":"Lana Wachowski"}        │"Speed Racer"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1946,"name":"Susan Sarandon"}        │"Speed Racer"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1960,"name":"John Goodman"}          │"Speed Racer"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1967,"name":"Lilly Wachowski"}       │"Speed Racer"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1966,"name":"Matthew Fox"}           │"Speed Racer"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1967,"name":"James Marshall"}        │"Ninja Assassin"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1982,"name":"Rain"}                  │"Ninja Assassin"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1967,"name":"Ben Miles"}             │"Ninja Assassin"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1971,"name":"Rick Yune"}             │"Ninja Assassin"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1965,"name":"Lana Wachowski"}        │"Ninja Assassin"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1952,"name":"Joel Silver"}           │"Ninja Assassin"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"name":"Naomie Harris"}                     │"Ninja Assassin"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1967,"name":"Lilly Wachowski"}       │"Ninja Assassin"      │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1968,"name":"Sam Rockwell"}          │"Frost/Nixon"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1969,"name":"Michael Sheen"}         │"Frost/Nixon"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1954,"name":"Ron Howard"}            │"Frost/Nixon"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1938,"name":"Frank Langella"}        │"Frost/Nixon"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1960,"name":"Oliver Platt"}          │"Frost/Nixon"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1958,"name":"Kevin Bacon"}           │"Frost/Nixon"         │
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1967,"name":"Julia Roberts"}         │"Charlie Wilson's War"│
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1931,"name":"Mike Nichols"}          │"Charlie Wilson's War"│
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1956,"name":"Tom Hanks"}             │"Charlie Wilson's War"│
+├─────────────────────────────────────────────┼──────────────────────┤
+│{"born":1967,"name":"Philip Seymour Hoffman"}│"Charlie Wilson's War"│
+└─────────────────────────────────────────────┴──────────────────────┘
+
+#3 - match (a)-[b]->(c) where id(a) < id(c) with a,c,count(b) as conta where conta > 1 return distinct a,c
+╒══════════════════════════════════════╤══════════════════════════════════════════════════════════════════════╕
+│"a"                                   │"c"                                                                   │
+╞══════════════════════════════════════╪══════════════════════════════════════════════════════════════════════╡
+│{"born":1967,"name":"Lilly Wachowski"}│{"tagline":"Speed has no limits","title":"Speed Racer","released":2008│
+│                                      │}                                                                     │
+├──────────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│{"born":1967,"name":"Lilly Wachowski"}│{"tagline":"Freedom! Forever!","title":"V for Vendetta","released":200│
+│                                      │6}                                                                    │
+├──────────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│{"born":1965,"name":"Lana Wachowski"} │{"tagline":"Speed has no limits","title":"Speed Racer","released":2008│
+│                                      │}                                                                     │
+├──────────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│{"born":1965,"name":"Lana Wachowski"} │{"tagline":"Freedom! Forever!","title":"V for Vendetta","released":200│
+│                                      │6}                                                                    │
+├──────────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│{"born":1947,"name":"Rob Reiner"}     │{"tagline":"Can two friends sleep together and still love each other i│
+│                                      │n the morning?","title":"When Harry Met Sally","released":1998}       │
+├──────────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│{"born":1956,"name":"Tom Hanks"}      │{"tagline":"In every life there comes a time when that thing you dream│
+│                                      │ becomes that thing you do","title":"That Thing You Do","released":199│
+│                                      │6}                                                                    │
+├──────────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│{"born":1941,"name":"Nora Ephron"}    │{"tagline":"Can two friends sleep together and still love each other i│
+│                                      │n the morning?","title":"When Harry Met Sally","released":1998}       │
+└──────────────────────────────────────┴──────────────────────────────────────────────────────────────────────┘
+
+#4 - match (reviewer1)-[:REVIEWED]->(movie)<-[:REVIEWED]-(reviewer2) where id(reviewer1) > id(reviewer2) return distinct reviewer1.name, reviewer2.name, movie.title
+╒══════════════════╤══════════════════╤═══════════════════╕
+│"reviewer1.name"  │"reviewer2.name"  │"movie.title"      │
+╞══════════════════╪══════════════════╪═══════════════════╡
+│"James Thompson"  │"Jessica Thompson"│"The Replacements" │
+├──────────────────┼──────────────────┼───────────────────┤
+│"James Thompson"  │"Angela Scope"    │"The Replacements" │
+├──────────────────┼──────────────────┼───────────────────┤
+│"Jessica Thompson"│"Angela Scope"    │"The Replacements" │
+├──────────────────┼──────────────────┼───────────────────┤
+│"James Thompson"  │"Jessica Thompson"│"The Da Vinci Code"│
+└──────────────────┴──────────────────┴───────────────────┘
+
+#5 - match (actor1)-[:ACTED_IN]->(movie)<-[:ACTED_IN]-(actor2) where id(actor1) > id(actor2) with actor1,actor2,count(movie) as movie_count where movie_count > 1 return distinct actor1,actor2
+╒═════════════════════════════════════════╤═════════════════════════════════════════╕
+│"actor1"                                 │"actor2"                                 │
+╞═════════════════════════════════════════╪═════════════════════════════════════════╡
+│{"born":1960,"name":"Hugo Weaving"}      │{"born":1961,"name":"Laurence Fishburne"}│
+├─────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"born":1960,"name":"Hugo Weaving"}      │{"born":1967,"name":"Carrie-Anne Moss"}  │
+├─────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"born":1961,"name":"Laurence Fishburne"}│{"born":1967,"name":"Carrie-Anne Moss"}  │
+├─────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"born":1960,"name":"Hugo Weaving"}      │{"born":1964,"name":"Keanu Reeves"}      │
+├─────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"born":1961,"name":"Laurence Fishburne"}│{"born":1964,"name":"Keanu Reeves"}      │
+├─────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"born":1967,"name":"Carrie-Anne Moss"}  │{"born":1964,"name":"Keanu Reeves"}      │
+├─────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"born":1943,"name":"J.T. Walsh"}        │{"born":1937,"name":"Jack Nicholson"}    │
+├─────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"born":1968,"name":"Cuba Gooding Jr."}  │{"born":1937,"name":"Jack Nicholson"}    │
+├─────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"born":1968,"name":"Cuba Gooding Jr."}  │{"born":1962,"name":"Tom Cruise"}        │
+├─────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"born":1956,"name":"Tom Hanks"}         │{"born":1961,"name":"Meg Ryan"}          │
+├─────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"born":1962,"name":"Rosie O'Donnell"}   │{"born":1956,"name":"Tom Hanks"}         │
+├─────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"born":1982,"name":"Rain"}              │{"born":1967,"name":"Ben Miles"}         │
+├─────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"born":1955,"name":"Gary Sinise"}       │{"born":1956,"name":"Tom Hanks"}         │
+├─────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"born":1944,"name":"Danny DeVito"}      │{"born":1937,"name":"Jack Nicholson"}    │
+├─────────────────────────────────────────┼─────────────────────────────────────────┤
+│{"born":1955,"name":"Bill Paxton"}       │{"born":1956,"name":"Tom Hanks"}         │
+└─────────────────────────────────────────┴─────────────────────────────────────────┘
+
+#6 - match (actor)-[ACTED_IN]->(movie {title:"Apollo 13"}) with movie.released - avg(actor.born) as avg_age return avg_age
+╒══════════════════╕
+│"avg_age"         │
+╞══════════════════╡
+│40.333333333333485│
+└──────────────────┘
+
+#7 - match (actor)-[ACTED_IN]->(movie) with movie, movie.released - avg(actor.born) as avg_age return movie.title as filme, round(avg_age*100)/100 as idade_media order by avg_age DESC LIMIT 10
+╒════════════════════════╤═════════════╕
+│"filme"                 │"idade_media"│
+╞════════════════════════╪═════════════╡
+│null                    │null         │
+├────────────────────────┼─────────────┤
+│null                    │null         │
+├────────────────────────┼─────────────┤
+│"Unforgiven"            │62.0         │
+├────────────────────────┼─────────────┤
+│"Something's Gotta Give"│54.0         │
+├────────────────────────┼─────────────┤
+│"The Birdcage"          │54.0         │
+├────────────────────────┼─────────────┤
+│"Charlie Wilson's War"  │51.75        │
+├────────────────────────┼─────────────┤
+│"The Polar Express"     │50.5         │
+├────────────────────────┼─────────────┤
+│"RescueDawn"            │50.2         │
+├────────────────────────┼─────────────┤
+│"Frost/Nixon"           │50.17        │
+├────────────────────────┼─────────────┤
+│"Cloud Atlas"           │50.0         │
+└────────────────────────┴─────────────┘
+
+#8 - match (actor)-[ACTED_IN]->(movie) with movie as young_mov, movie.released - avg(actor.born) as avg_age order by avg_age LIMIT 1
+     match (actor)-[ACTED_IN]->(young_mov) return young_mov, actor
+╒══════════════════════════════════════════════════════════════════════╤════════════════════════════════════════╕
+│"young_mov"                                                           │"actor"                                 │
+╞══════════════════════════════════════════════════════════════════════╪════════════════════════════════════════╡
+│{"tagline":"For some, it's the last real taste of innocence, and the f│{"born":1974,"name":"Jerry O'Connell"}  │
+│irst real taste of life. But for everyone, it's the time that memories│                                        │
+│ are made of.","title":"Stand By Me","released":1986}                 │                                        │
+├──────────────────────────────────────────────────────────────────────┼────────────────────────────────────────┤
+│{"tagline":"For some, it's the last real taste of innocence, and the f│{"born":1947,"name":"Rob Reiner"}       │
+│irst real taste of life. But for everyone, it's the time that memories│                                        │
+│ are made of.","title":"Stand By Me","released":1986}                 │                                        │
+├──────────────────────────────────────────────────────────────────────┼────────────────────────────────────────┤
+│{"tagline":"For some, it's the last real taste of innocence, and the f│{"born":1970,"name":"River Phoenix"}    │
+│irst real taste of life. But for everyone, it's the time that memories│                                        │
+│ are made of.","title":"Stand By Me","released":1986}                 │                                        │
+├──────────────────────────────────────────────────────────────────────┼────────────────────────────────────────┤
+│{"tagline":"For some, it's the last real taste of innocence, and the f│{"born":1942,"name":"Marshall Bell"}    │
+│irst real taste of life. But for everyone, it's the time that memories│                                        │
+│ are made of.","title":"Stand By Me","released":1986}                 │                                        │
+├──────────────────────────────────────────────────────────────────────┼────────────────────────────────────────┤
+│{"tagline":"For some, it's the last real taste of innocence, and the f│{"born":1972,"name":"Wil Wheaton"}      │
+│irst real taste of life. But for everyone, it's the time that memories│                                        │
+│ are made of.","title":"Stand By Me","released":1986}                 │                                        │
+├──────────────────────────────────────────────────────────────────────┼────────────────────────────────────────┤
+│{"tagline":"For some, it's the last real taste of innocence, and the f│{"born":1966,"name":"Kiefer Sutherland"}│
+│irst real taste of life. But for everyone, it's the time that memories│                                        │
+│ are made of.","title":"Stand By Me","released":1986}                 │                                        │
+├──────────────────────────────────────────────────────────────────────┼────────────────────────────────────────┤
+│{"tagline":"For some, it's the last real taste of innocence, and the f│{"born":1966,"name":"John Cusack"}      │
+│irst real taste of life. But for everyone, it's the time that memories│                                        │
+│ are made of.","title":"Stand By Me","released":1986}                 │                                        │
+├──────────────────────────────────────────────────────────────────────┼────────────────────────────────────────┤
+│{"tagline":"For some, it's the last real taste of innocence, and the f│{"born":1971,"name":"Corey Feldman"}    │
+│irst real taste of life. But for everyone, it's the time that memories│                                        │
+│ are made of.","title":"Stand By Me","released":1986}                 │                                        │
+└──────────────────────────────────────────────────────────────────────┴────────────────────────────────────────┘
+
+#9 - match path=shortestPath( (start_node {name:"John Cusack"})-[*..20]-(end_node {name:"Demi Moore"}) ) unwind nodes(path) as n return path, count(distinct(n))
+╒══════════════════════════════════════════════════════════════════════╤════════════════════╕
+│"path"                                                                │"count(distinct(n))"│
+╞══════════════════════════════════════════════════════════════════════╪════════════════════╡
+│[{"born":1966,"name":"John Cusack"},{"roles":["Denny Lachance"]},{"tag│5                   │
+│line":"For some, it's the last real taste of innocence, and the first │                    │
+│real taste of life. But for everyone, it's the time that memories are │                    │
+│made of.","title":"Stand By Me","released":1986},{"tagline":"For some,│                    │
+│ it's the last real taste of innocence, and the first real taste of li│                    │
+│fe. But for everyone, it's the time that memories are made of.","title│                    │
+│":"Stand By Me","released":1986},{},{"born":1947,"name":"Rob Reiner"},│                    │
+│{"born":1947,"name":"Rob Reiner"},{},{"tagline":"In the heart of the n│                    │
+│ation's capital, in a courthouse of the U.S. government, one man will │                    │
+│stop at nothing to keep his honor, and one will stop at nothing to fin│                    │
+│d the truth.","title":"A Few Good Men","released":1992},{"tagline":"In│                    │
+│ the heart of the nation's capital, in a courthouse of the U.S. govern│                    │
+│ment, one man will stop at nothing to keep his honor, and one will sto│                    │
+│p at nothing to find the truth.","title":"A Few Good Men","released":1│                    │
+│992},{"roles":["Lt. Cdr. JoAnne Galloway"]},{"born":1962,"name":"Demi │                    │
+│Moore"}]                                                              │                    │
+└──────────────────────────────────────────────────────────────────────┴────────────────────┘
+
+#10 - match path=shortestPath( (start_node:Person {name:"Keanu Reeves"})-[*..20]-(end_node:Person {name:"Tom Cruise"}) ) unwind nodes(path) as n return count(distinct n)
+╒═══════════════════╕
+│"count(distinct n)"│
+╞═══════════════════╡
+│5                  │
+└───────────────────┘
+
+#11 - match path=shortestPath( (start_node:Person)-[*..20]-(end_node:Person) ) where start_node.name contains 'Jim' and end_node.name contains 'Kevin' unwind nodes(path) as n with start_node, end_node, count(distinct n) as dimension return start_node, end_node, dimension
+╒════════════════════════════════════╤═══════════════════════════════════╤═══════════╕
+│"start_node"                        │"end_node"                         │"dimension"│
+╞════════════════════════════════════╪═══════════════════════════════════╪═══════════╡
+│{"born":1941,"name":"Jim Cash"}     │{"born":1958,"name":"Kevin Bacon"} │5          │
+├────────────────────────────────────┼───────────────────────────────────┼───────────┤
+│{"born":1941,"name":"Jim Cash"}     │{"born":1957,"name":"Kevin Pollak"}│5          │
+├────────────────────────────────────┼───────────────────────────────────┼───────────┤
+│{"born":1949,"name":"Jim Broadbent"}│{"born":1958,"name":"Kevin Bacon"} │5          │
+├────────────────────────────────────┼───────────────────────────────────┼───────────┤
+│{"born":1949,"name":"Jim Broadbent"}│{"born":1957,"name":"Kevin Pollak"}│7          │
+└────────────────────────────────────┴───────────────────────────────────┴───────────┘
+
+#12 - match path=shortestPath( (start_node:Person)-[*..2]-(end_node:Person {name:"Jim Cash"}) ) where start_node <> end_node unwind nodes(path) as n with start_node, path, count(distinct n) as dimension where dimension = 3 return distinct start_node
+╒══════════════════════════════════════╕
+│"start_node"                          │
+╞══════════════════════════════════════╡
+│{"born":1962,"name":"Tom Cruise"}     │
+├──────────────────────────────────────┤
+│{"born":1957,"name":"Kelly McGillis"} │
+├──────────────────────────────────────┤
+│{"born":1959,"name":"Val Kilmer"}     │
+├──────────────────────────────────────┤
+│{"born":1962,"name":"Anthony Edwards"}│
+├──────────────────────────────────────┤
+│{"born":1933,"name":"Tom Skerritt"}   │
+├──────────────────────────────────────┤
+│{"born":1961,"name":"Meg Ryan"}       │
+├──────────────────────────────────────┤
+│{"born":1944,"name":"Tony Scott"}     │
+└──────────────────────────────────────┘
+
+#13 - match path=shortestPath( (start_node:Person)-[*..20]-(end_node:Person {name:"Kevin Bacon"}) ) where start_node <> end_node unwind nodes(path) as n with start_node, path, count(distinct n) as dimension order by dimension desc limit 1 return start_node, dimension
+╒═══════════════════════════════════════╤═══════════╕
+│"start_node"                           │"dimension"│
+╞═══════════════════════════════════════╪═══════════╡
+│{"born":1967,"name":"Carrie-Anne Moss"}│7          │
+└───────────────────────────────────────┴───────────┘
+
+#14 - match path=shortestPath( (start_node:Person)-[*..20]-(end_node:Person) ) where start_node <> end_node unwind nodes(path) as n with start_node, path, count(distinct n) as dimension order by dimension desc limit 1 return start_node, dimension
+╒═════════════════════════════════════╤═══════════╕
+│"start_node"                         │"dimension"│
+╞═════════════════════════════════════╪═══════════╡
+│{"born":1947,"name":"Takeshi Kitano"}│11         │
+└─────────────────────────────────────┴───────────┘
+
+#15 - match path=shortestPath( (start_node:Person)-[*1..20]-(end_node:Person) ) where id(start_node) > id(end_node) unwind nodes(path) as n with start_node, path, count(distinct n) as dimension order by dimension return dimension, count(dimension)
+╒═══════════╤══════════════════╕
+│"dimension"│"count(dimension)"│
+╞═══════════╪══════════════════╡
+│2          │3                 │
+├───────────┼──────────────────┤
+│3          │638               │
+├───────────┼──────────────────┤
+│4          │57                │
+├───────────┼──────────────────┤
+│5          │3124              │
+├───────────┼──────────────────┤
+│6          │123               │
+├───────────┼──────────────────┤
+│7          │4013              │
+├───────────┼──────────────────┤
+│8          │11                │
+├───────────┼──────────────────┤
+│9          │805               │
+├───────────┼──────────────────┤
+│11         │4                 │
+└───────────┴──────────────────┘
+
+#16 - match path=shortestPath( (start_node:Person)-[:ACTED_IN*..20]-(end_node:Person) ) where start_node <> end_node unwind nodes(path) as n with start_node, path, count(distinct n) as dimension return start_node, avg(dimension) as average order by average LIMIT 10
+╒═══════════════════════════════════════╤═════════════════╕
+│"start_node"                           │"average"        │
+╞═══════════════════════════════════════╪═════════════════╡
+│{"born":1956,"name":"Tom Hanks"}       │4.782178217821783│
+├───────────────────────────────────────┼─────────────────┤
+│{"born":1958,"name":"Kevin Bacon"}     │5.376237623762377│
+├───────────────────────────────────────┼─────────────────┤
+│{"born":1968,"name":"Cuba Gooding Jr."}│5.514851485148514│
+├───────────────────────────────────────┼─────────────────┤
+│{"born":1937,"name":"Jack Nicholson"}  │5.554455445544553│
+├───────────────────────────────────────┼─────────────────┤
+│{"born":1961,"name":"Bonnie Hunt"}     │5.574257425742573│
+├───────────────────────────────────────┼─────────────────┤
+│{"born":1961,"name":"Meg Ryan"}        │5.594059405940593│
+├───────────────────────────────────────┼─────────────────┤
+│{"born":1963,"name":"Greg Kinnear"}    │5.653465346534655│
+├───────────────────────────────────────┼─────────────────┤
+│{"born":1962,"name":"Tom Cruise"}      │5.693069306930693│
+├───────────────────────────────────────┼─────────────────┤
+│{"born":1960,"name":"Hugo Weaving"}    │5.732673267326734│
+├───────────────────────────────────────┼─────────────────┤
+│{"born":1963,"name":"Helen Hunt"}      │5.811881188118813│
+└───────────────────────────────────────┴─────────────────┘
+
+#17 - Encontre todos os atores que tenham no nome "Tom" e que participaram em mais de 2 filmes
+$ match (person:Person)-[:ACTED_IN]->(movie:Movie) where person.name contains "Tom" with person,count(movie) as movies where movies > 2 return person, movies
+╒═════════════════════════════════╤════════╕
+│"person"                         │"movies"│
+╞═════════════════════════════════╪════════╡
+│{"born":1962,"name":"Tom Cruise"}│3       │
+├─────────────────────────────────┼────────┤
+│{"born":1956,"name":"Tom Hanks"} │12      │
+└─────────────────────────────────┴────────┘
+
+#18 - Encontre todos os filmes que estrearam antes de 1999 e que tenham pelo menos 5 atores
+$ match (person:Person)-[:ACTED_IN]->(movie:Movie) where movie.released < 1999 with movie,count(person) as atores where atores > 4 return movie, atores
+╒══════════════════════════════════════════════════════════════════════╤════════╕
+│"movie"                                                               │"atores"│
+╞══════════════════════════════════════════════════════════════════════╪════════╡
+│{"tagline":"In the heart of the nation's capital, in a courthouse of t│12      │
+│he U.S. government, one man will stop at nothing to keep his honor, an│        │
+│d one will stop at nothing to find the truth.","title":"A Few Good Men│        │
+│","released":1992}                                                    │        │
+├──────────────────────────────────────────────────────────────────────┼────────┤
+│{"tagline":"I feel the need, the need for speed.","title":"Top Gun","r│6       │
+│eleased":1986}                                                        │        │
+├──────────────────────────────────────────────────────────────────────┼────────┤
+│{"tagline":"For some, it's the last real taste of innocence, and the f│7       │
+│irst real taste of life. But for everyone, it's the time that memories│        │
+│ are made of.","title":"Stand By Me","released":1986}                 │        │
+├──────────────────────────────────────────────────────────────────────┼────────┤
+│{"tagline":"After life there is more. The end is just the beginning.",│5       │
+│"title":"What Dreams May Come","released":1998}                       │        │
+├──────────────────────────────────────────────────────────────────────┼────────┤
+│{"tagline":"At odds in life... in love on-line.","title":"You've Got M│6       │
+│ail","released":1998}                                                 │        │
+├──────────────────────────────────────────────────────────────────────┼────────┤
+│{"tagline":"What if someone you never met, someone you never saw, some│6       │
+│one you never knew was the only someone for you?","title":"Sleepless i│        │
+│n Seattle","released":1993}                                           │        │
+├──────────────────────────────────────────────────────────────────────┼────────┤
+│{"tagline":"Houston, we have a problem.","title":"Apollo 13","released│5       │
+│":1995}                                                               │        │
+├──────────────────────────────────────────────────────────────────────┼────────┤
+│{"tagline":"Once in a lifetime you get a chance to do something differ│6       │
+│ent.","title":"A League of Their Own","released":1992}                │        │
+└──────────────────────────────────────────────────────────────────────┴────────┘
+
+#19 - Encontre as pessoas que dirigiram mais do que 1 filme que tenha estreado depois de 2000
+$ match (person:Person)-[:DIRECTED]->(movie:Movie) where movie.released >= 2000 with person, count(movie) as movies where movies > 1 return person, movies
+╒══════════════════════════════════════╤════════╕
+│"person"                              │"movies"│
+╞══════════════════════════════════════╪════════╡
+│{"born":1965,"name":"Lana Wachowski"} │4       │
+├──────────────────────────────────────┼────────┤
+│{"born":1967,"name":"Lilly Wachowski"}│4       │
+├──────────────────────────────────────┼────────┤
+│{"born":1954,"name":"Ron Howard"}     │2       │
+├──────────────────────────────────────┼────────┤
+│{"born":1967,"name":"James Marshall"} │2       │
+├──────────────────────────────────────┼────────┤
+│{"born":1951,"name":"Robert Zemeckis"}│2       │
+└──────────────────────────────────────┴────────┘
+
+#20 - Qual é a maior distância possível entre um filme e uma pessoa ?
+$ match path=shortestPath( (start_node:Person)-[*1..50]-(end_node:Movie) ) unwind nodes(path) as n with start_node, path, count(distinct n) as dimension order by dimension desc limit 1 return dimension
+╒═══════════╕
+│"dimension"│
+╞═══════════╡
+│10         │
+└───────────┘

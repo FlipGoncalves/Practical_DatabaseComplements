@@ -1,0 +1,44 @@
+Ping
+ola
+dbsize
+set testkey hello
+exists testkey
+type testkey
+set int1 24
+type int1
+keys *
+scan 0
+lpush list1 "filipe"
+lpush list1 "andre"
+lrange
+lrange list1
+lrange list1 0 -1
+rpush list1 "ola"
+lrange list1 0 -1
+lpop list1
+rpop list1
+lrange list1 0 -1
+hset hash nome "Filipe"
+hset hash apelido "Andre"
+hset hash nome "Miguel"
+hmget hash nome
+hmget hash apelido
+hgetall
+hgetall hash
+hmget hash nome apelido
+hmget hash apelido nome
+hlen hash
+hkeys hash
+hvals hash
+sadd set1 "Filipe" "Andre" "Seabra" "Goncalves"
+smembers set1
+save
+bgsave
+sadd set2 "Miguel" "nome1" "nome2" "nome3"
+zadd sortedset1 nomes1 set2 nomes2 set1
+zadd sortedset1 1000 set2 9 set1
+zrange sortedset1 0 -1
+zrange sortedset1 0 -1 withscores
+sunion uniao set1 set2
+sinter inter set1 set2
+sdiff differ set1 set2

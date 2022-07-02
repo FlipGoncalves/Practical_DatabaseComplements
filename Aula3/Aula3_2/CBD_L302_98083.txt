@@ -1,0 +1,840 @@
+##### A) #####
+
+## Keyspace Creation ###
+cqlsh> CREATE KEYSPACE cbd_aula3_2 WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 3};
+cqlsh> USE cbd_aula3_2 ;
+
+
+### Tables ###
+#USERS
+cqlsh:cbd_aula3_2> create columnfamily Users (
+                        username text,
+                        nome text,
+                        email text,
+                        date_register timestamp,
+                        primary key(email)
+                    );
+
+#VIDEOS
+cqlsh:cbd_aula3_2> create columnfamily Videos (
+                        video_id int,
+                        autor text,
+                        title text,
+                        descricao text,
+                        tags list<text>,
+                        date_register timestamp,
+                        primary key(video_id, date_register)
+                    ) WITH CLUSTERING ORDER BY (date_register DESC);
+
+#VIDEOS POR TAG
+cqlsh:cbd_aula3_2> create columnfamily Video_por_tag (
+                        video_id list<int>,
+                        tag text,
+                        primary key(tag)
+                    );
+
+#VIDEOS TAG
+cqlsh:cbd_aula3_2> create columnfamily Video_tag (
+                        video_id int,
+                        tag text,
+                        primary key(tag, video_id)
+                    );
+
+#VIDEOS AUTHOR
+cqlsh:cbd_aula3_2> create columnfamily Video_autor(
+                        user_mail text, 
+                        author text, 
+                        video_id int, 
+                        date_register timestamp, 
+                        primary key(user_mail, date_register, video_id)
+                    );
+
+#COMMENTS USERNAME
+cqlsh:cbd_aula3_2> create table Comment_username (
+                        date_comment timestamp,
+                        video_id int,
+                        user_mail text,
+                        user_username text,
+                        comment text,
+                        primary key (user_username, date_comment)
+                    ) WITH CLUSTERING ORDER BY (date_comment DESC);
+
+#COMMENTS VIDEO
+cqlsh:cbd_aula3_2> create table Comment_video (
+                        date_comment timestamp,
+                        video_id int,
+                        user_mail text,
+                        user_username text,
+                        comment text,
+                        primary key (video_id, date_comment)
+                    ) WITH CLUSTERING ORDER BY (date_comment DESC);
+
+#FOLLOWS
+cqlsh:cbd_aula3_2> create columnfamily Follow (
+                        user_mail text,
+                        video_id int,
+                        primary key(video_id, user_mail)
+                    );
+
+#USER FOLLOWS VIDEOS
+cqlsh:cbd_aula3_2> create columnfamily User_follow_video (
+                        video_id list<int>,
+                        user_mail text primary key
+                    );
+
+#EVENTS                     
+cqlsh:cbd_aula3_2> create columnfamily Event (
+                        user_mail text, 
+                        video_id int,
+                        tipo text,
+                        date_event timestamp,
+                        date_video int,
+                        primary key((user_mail, video_id), date_event, date_video)
+                    ) WITH CLUSTERING ORDER BY (date_event DESC);
+
+#RATINGS     
+cqlsh:cbd_aula3_2> create columnfamily Rating (
+                    rating int,
+                    video_id int,
+                    rating_id int,
+                    primary key(video_id, rating, rating_id)
+                );
+
+
+##### B) ######
+
+### Iserts ###
+
+#USER
+
+INSERT INTO Users (email, nome, date_register, username) VALUES ('flip@test.com', 'Filipe', dateof(now()), 'Maestro');
+INSERT INTO Users (email, nome, date_register, username) VALUES ('user1@bot.com', 'Bot1', dateof(now()), 'Tester1');
+INSERT INTO Users (email, nome, date_register, username) VALUES ('user2@bot.com', 'Bot2', dateof(now()), 'Tester2');
+INSERT INTO Users (email, nome, date_register, username) VALUES ('user3@bot.com', 'Bot3', dateof(now()), 'Tester3');
+INSERT INTO Users (email, nome, date_register, username) VALUES ('user4@bot.com', 'Bot4', dateof(now()), 'Tester4');
+INSERT INTO Users (email, nome, date_register, username) VALUES ('user5@bot.com', 'Bot5', dateof(now()), 'Tester5');
+INSERT INTO Users (email, nome, date_register, username) VALUES ('user6@bot.com', 'Bot6', dateof(now()), 'Tester6');
+INSERT INTO Users (email, nome, date_register, username) VALUES ('user7@bot.com', 'Bot7', dateof(now()), 'Tester7');
+INSERT INTO Users (email, nome, date_register, username) VALUES ('user8@bot.com', 'Bot8', dateof(now()), 'Tester8');
+INSERT INTO Users (email, nome, date_register, username) VALUES ('user9@bot.com', 'Bot9', dateof(now()), 'Tester9');
+INSERT INTO Users (email, nome, date_register, username) VALUES ('user10@bot.com', 'Bot10', dateof(now()), 'Tester10');
+INSERT INTO Users (email, nome, date_register, username) VALUES ('user11@bot.com', 'Bot11', dateof(now()), 'Tester11');
+INSERT INTO Users (email, nome, date_register, username) VALUES ('user12@bot.com', 'Bot12', dateof(now()), 'Tester12');
+INSERT INTO Users (email, nome, date_register, username) VALUES ('user13@bot.com', 'Bot13', dateof(now()), 'Tester13');
+INSERT INTO Users (email, nome, date_register, username) VALUES ('user14@bot.com', 'Bot14', dateof(now()), 'Tester14');
+INSERT INTO Users (email, nome, date_register, username) VALUES ('user15@bot.com', 'Bot15', dateof(now()), 'Tester15');
+
+cqlsh:cbd_aula3_2> SELECT * FROM Users;
+
+ email          | name  | date_register                   | username
+----------------+-------+---------------------------------+----------
+  user8@bot.com | 2021-12-09 09:31:23.146000+0000 |   Bot8 |  Tester8
+  user1@bot.com | 2021-12-09 09:31:23.071000+0000 |   Bot1 |  Tester1
+  user5@bot.com | 2021-12-09 09:31:23.114000+0000 |   Bot5 |  Tester5
+ user10@bot.com | 2021-12-09 09:31:23.165000+0000 |  Bot10 | Tester10
+ user11@bot.com | 2021-12-09 09:31:23.182000+0000 |  Bot11 | Tester11
+ user13@bot.com | 2021-12-09 09:31:23.201000+0000 |  Bot13 | Tester13
+ user14@bot.com | 2021-12-09 09:31:23.210000+0000 |  Bot14 | Tester14
+  user2@bot.com | 2021-12-09 09:31:23.081000+0000 |   Bot2 |  Tester2
+ user15@bot.com | 2021-12-09 09:31:25.561000+0000 |  Bot15 | Tester15
+  user9@bot.com | 2021-12-09 09:31:23.155000+0000 |   Bot9 |  Tester9
+  user4@bot.com | 2021-12-09 09:31:23.103000+0000 |   Bot4 |  Tester4
+  flip@test.com | 2021-12-09 09:31:23.055000+0000 | Filipe |  Maestro
+  user6@bot.com | 2021-12-09 09:31:23.124000+0000 |   Bot6 |  Tester6
+  user7@bot.com | 2021-12-09 09:31:23.134000+0000 |   Bot7 |  Tester7
+  user3@bot.com | 2021-12-09 09:31:23.093000+0000 |   Bot3 |  Tester3
+ user12@bot.com | 2021-12-09 09:31:23.192000+0000 |  Bot12 | Tester12
+
+
+#VIDEOS
+
+INSERT INTO Videos (video_id, autor, date_register, descricao, tags, title) VALUES (1, 'ds@test.com', dateof(now()), 'A day at the zoo', ['Zoo','Cute','Animals'], 'Zoo Video');
+INSERT INTO Videos (video_id, autor, date_register, descricao, tags, title) VALUES (2, 'user1@bot.com', dateof(now()), 'Made by a bot', ['Creepy','Automated'], 'Creepy Automated Video');
+INSERT INTO Videos (video_id, autor, date_register, descricao, tags, title) VALUES (2, 'user2@bot.com', dateof(now()), 'Made by a bot', ['Cute','Automated'], 'Cute Automated Video');
+INSERT INTO Videos (video_id, autor, date_register, descricao, tags, title) VALUES (3, 'user2@bot.com', dateof(now()), 'Made by a bot', ['Mindblowing','Automated'], 'Mindblowing Automated Video');
+INSERT INTO Videos (video_id, autor, date_register, descricao, tags, title) VALUES (4, 'user4@bot.com', dateof(now()), 'Made by a bot', ['Fantasy','Automated'], 'Fantasy Automated Video');
+INSERT INTO Videos (video_id, autor, date_register, descricao, tags, title) VALUES (5, 'user10@bot.com', dateof(now()), 'Made by a bot', ['Fitness','Automated'], 'Fitness Automated Video');
+INSERT INTO Videos (video_id, autor, date_register, descricao, tags, title) VALUES (6, 'user12@bot.com', dateof(now()), 'Made by a bot', ['NSFW','Automated'], 'NSFW Automated Video');
+INSERT INTO Videos (video_id, autor, date_register, descricao, tags, title) VALUES (7, 'user2@bot.com', dateof(now()), 'Made by a bot', ['Gaming','Automated'], 'Gaming Automated Video');
+INSERT INTO Videos (video_id, autor, date_register, descricao, tags, title) VALUES (8, 'user2@bot.com', dateof(now()), 'Made by a bot', ['Gaming','Automated'], 'Gaming Automated Video 2');
+INSERT INTO Videos (video_id, autor, date_register, descricao, tags, title) VALUES (9, 'user6@bot.com', dateof(now()), 'Made by a bot', ['Mindblowing','Automated'], 'Mindblowing Automated Video 2');
+INSERT INTO Videos (video_id, autor, date_register, descricao, tags, title) VALUES (10, 'ds@test.com', dateof(now()), 'The final video', ['Final'], 'The end');
+
+cqlsh:cbd_aula3_2> SELECT * FROM Videos;
+
+ id | author         | upload_timestamp                | description      | tags                         | title
+----+----------------+---------------------------------+------------------+------------------------------+--------------------------------
+    5 | 2021-12-09 09:39:48.204000+0000 | user10@bot.com |    Made by a bot |     ['Fitness', 'Automated'] |       Fitness Automated Video
+   10 | 2021-12-09 09:39:48.255000+0000 |    ds@test.com |  The final video |                    ['Final'] |                       The end
+    1 | 2021-12-09 09:39:48.149000+0000 |    ds@test.com | A day at the zoo |   ['Zoo', 'Cute', 'Animals'] |                     Zoo Video
+    8 | 2021-12-09 09:39:48.233000+0000 |  user2@bot.com |    Made by a bot |      ['Gaming', 'Automated'] |      Gaming Automated Video 2
+    2 | 2021-12-09 09:39:48.173000+0000 |  user2@bot.com |    Made by a bot |        ['Cute', 'Automated'] |          Cute Automated Video
+    2 | 2021-12-09 09:39:48.161000+0000 |  user1@bot.com |    Made by a bot |      ['Creepy', 'Automated'] |        Creepy Automated Video
+    4 | 2021-12-09 09:39:48.193000+0000 |  user4@bot.com |    Made by a bot |     ['Fantasy', 'Automated'] |       Fantasy Automated Video
+    7 | 2021-12-09 09:39:48.223000+0000 |  user2@bot.com |    Made by a bot |      ['Gaming', 'Automated'] |        Gaming Automated Video
+    6 | 2021-12-09 09:39:48.213000+0000 | user12@bot.com |    Made by a bot |        ['NSFW', 'Automated'] |          NSFW Automated Video
+    9 | 2021-12-09 09:39:48.245000+0000 |  user6@bot.com |    Made by a bot | ['Mindblowing', 'Automated'] | Mindblowing Automated Video 2
+    3 | 2021-12-09 09:39:48.183000+0000 |  user2@bot.com |    Made by a bot | ['Mindblowing', 'Automated'] |   Mindblowing Automated Video
+
+
+#VIDEOS_TAG
+
+INSERT INTO Video_tag(tag,video_id) VALUES ('NSFW', 7);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Cute', 1);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Cute', 3);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Mindblowing', 10);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Mindblowing', 4);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Gaming', 8);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Gaming', 9);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Fitness', 6);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Animals', 1);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Zoo', 1);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Final', 11);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Creepy', 2);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Fantasy', 5);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Automated', 5);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Automated', 10);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Automated', 8);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Automated', 2);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Automated', 4);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Automated', 7);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Automated', 6);
+INSERT INTO Video_tag(tag,video_id) VALUES ('Automate', 9);
+
+cqlsh:cbd_aula3_2> SELECT * FROM Video_tag;
+
+ tag         | video_id
+-------------+----------
+        NSFW |        7
+        Cute |        1
+        Cute |        3
+ Mindblowing |        4
+ Mindblowing |       10
+      Gaming |        8
+      Gaming |        9
+     Fitness |        6
+     Animals |        1
+         Zoo |        1
+       Final |       11
+   Automated |        2
+   Automated |        4
+   Automated |        5
+   Automated |        6
+   Automated |        7
+   Automated |        8
+   Automated |       10
+      Creepy |        2
+    Automate |        9
+     Fantasy |        5
+
+
+#VIDEOS_POR_TAG
+
+INSERT INTO Video_por_tag(tag,video_id) VALUES ('Automated', [5,10,8,2,4,7,6,9,3]);
+INSERT INTO Video_por_tag(tag,video_id) VALUES ('Fantasy', [5]);
+INSERT INTO Video_por_tag(tag,video_id) VALUES ('Mindblowing', [10,4]);
+INSERT INTO Video_por_tag(tag,video_id) VALUES ('Final', [11]);
+INSERT INTO Video_por_tag(tag,video_id) VALUES ('Zoo', [1]);
+INSERT INTO Video_por_tag(tag,video_id) VALUES ('Animals', [1]);
+INSERT INTO Video_por_tag(tag,video_id) VALUES ('Cute', [1,3]);
+INSERT INTO Video_por_tag(tag,video_id) VALUES ('Gaming', [8,9]);
+INSERT INTO Video_por_tag(tag,video_id) VALUES ('Creepy', [2]);
+INSERT INTO Video_por_tag(tag,video_id) VALUES ('NSFW', [7]);
+INSERT INTO Video_por_tag(tag,video_id) VALUES ('Fitness', [6]);
+
+cqlsh:cbd_aula3_2> SELECT * FROM Video_por_tag;
+
+ tag         | video_id
+-------------+------------------------------
+        NSFW |                          [7]
+        Cute |                       [1, 3]
+ Mindblowing |                      [10, 4]
+      Gaming |                       [8, 9]
+     Fitness |                          [6]
+     Animals |                          [1]
+         Zoo |                          [1]
+       Final |                         [11]
+   Automated | [5, 10, 8, 2, 4, 7, 6, 9, 3]
+      Creepy |                          [2]
+     Fantasy |                          [5]
+
+#VIDEOS AUTOR
+
+INSERT INTO Video_autor(user_mail, date_register, video_id, author) VALUES ('user2@bot.com','2020-02-03 12:26:05', 3, 'Bot2');
+INSERT INTO Video_autor(user_mail, date_register, video_id, author) VALUES ('user2@bot.com','2020-02-03 12:26:33', 9, 'Bot2');
+INSERT INTO Video_autor(user_mail, date_register, video_id, author) VALUES ('user10@bot.com','2020-02-03 12:26:19', 6, 'Bot10');
+INSERT INTO Video_autor(user_mail, date_register, video_id, author) VALUES ('user12@bot.com','2020-02-03 12:26:25', 7, 'Bot12');
+INSERT INTO Video_autor(user_mail, date_register, video_id, author) VALUES ('user2@bot.com','2020-02-03 12:26:11', 4, 'Bot2');
+INSERT INTO Video_autor(user_mail, date_register, video_id, author) VALUES ('user2@bot.com','2020-02-03 12:26:29', 8, 'Bot2');
+INSERT INTO Video_autor(user_mail, date_register, video_id, author) VALUES ('user1@bot.com','2020-02-03 12:26:00', 2, 'Bot1');
+INSERT INTO Video_autor(user_mail, date_register, video_id, author) VALUES ('ds@test.com','2020-02-03 12:26:41', 11, 'FenixDS');
+INSERT INTO Video_autor(user_mail, date_register, video_id, author) VALUES ('user6@bot.com','2020-02-03 12:26:38', 10, 'Bot6');
+INSERT INTO Video_autor(user_mail, date_register, video_id, author) VALUES ('user4@bot.com','2020-02-03 12:26:16', 5, 'Bot4');
+INSERT INTO Video_autor(user_mail, date_register, video_id, author) VALUES ('flip@test.com','2020-02-03 12:25:56', 1, 'Maestro');
+
+cqlsh:cbd_aula3_2> SELECT * FROM Video_autor;
+
+ user_email     | upload_timestamp                | video_id | author
+----------------+---------------------------------+----------+---------
+  user1@bot.com | 2020-02-03 12:26:00.000000+0000 |        2 |    Bot1
+ user10@bot.com | 2020-02-03 12:26:19.000000+0000 |        6 |   Bot10
+  user2@bot.com | 2020-02-03 12:26:05.000000+0000 |        3 |    Bot2
+  user2@bot.com | 2020-02-03 12:26:11.000000+0000 |        4 |    Bot2
+  user2@bot.com | 2020-02-03 12:26:29.000000+0000 |        8 |    Bot2
+  user2@bot.com | 2020-02-03 12:26:33.000000+0000 |        9 |    Bot2
+    ds@test.com | 2020-02-03 12:26:41.000000+0000 |       11 | FenixDS
+  user4@bot.com | 2020-02-03 12:26:16.000000+0000 |        5 |    Bot4
+  flip@test.com | 2020-02-03 12:25:56.000000+0000 |        1 | Maestro
+  user6@bot.com | 2020-02-03 12:26:38.000000+0000 |       10 |    Bot6
+ user12@bot.com | 2020-02-03 12:26:25.000000+0000 |        7 |   Bot12
+
+
+#COMMENTS
+
+INSERT INTO Comment_username(user_username, date_comment, comment, user_mail,video_id) VALUES ('Bot1', dateof(now()), 'Automated Comment', 'user1@bot.com', 1); 
+INSERT INTO Comment_video(video_id, date_comment, comment, user_mail, user_username) VALUES (1, dateof(now()), 'Automated Comment', 'user1@bot.com', 'Bot1');
+INSERT INTO Comment_username(user_username, date_comment, comment, user_mail,video_id) VALUES ('Bot2', dateof(now()), 'Automated Comment', 'user2@bot.com', 1); 
+INSERT INTO Comment_video(video_id, date_comment, comment, user_mail, user_username) VALUES (1, dateof(now()), 'Automated Comment', 'user2@bot.com', 'Bot2');
+INSERT INTO Comment_username(user_username, date_comment, comment, user_mail,video_id) VALUES ('Bot3', dateof(now()), 'Automated Comment', 'user3@bot.com', 1); 
+INSERT INTO Comment_video(video_id, date_comment, comment, user_mail, user_username) VALUES (1, dateof(now()), 'Automated Comment', 'user3@bot.com', 'Bot3');
+INSERT INTO Comment_username(user_username, date_comment, comment, user_mail,video_id) VALUES ('Bot3', dateof(now()), 'Good Video Fellow Bot', 'user3@bot.com', 2); 
+INSERT INTO Comment_video(video_id, date_comment, comment, user_mail, user_username) VALUES (2, dateof(now()), 'Good Video Fellow Bot', 'user3@bot.com', 'Bot3');
+INSERT INTO Comment_username(user_username, date_comment, comment, user_mail,video_id) VALUES ('Bot4', dateof(now()), 'Good Video Fellow Bot', 'user4@bot.com', 2); 
+INSERT INTO Comment_video(video_id, date_comment, comment, user_mail, user_username) VALUES (2, dateof(now()), 'Good Video Fellow Bot', 'user4@bot.com', 'Bot4');
+INSERT INTO Comment_username(user_username, date_comment, comment, user_mail,video_id) VALUES ('Bot5', dateof(now()), 'Good Video Fellow Bot', 'user5@bot.com', 6); 
+INSERT INTO Comment_video(video_id, date_comment, comment, user_mail, user_username) VALUES (6, dateof(now()), 'Good Video Fellow Bot', 'user5@bot.com', 'Bot5');
+INSERT INTO Comment_username(user_username, date_comment, comment, user_mail,video_id) VALUES ('Bot8', dateof(now()), 'Good Video Fellow Bot', 'user8@bot.com', 9); 
+INSERT INTO Comment_video(video_id, date_comment, comment, user_mail, user_username) VALUES (9, dateof(now()), 'Good Video Fellow Bot', 'user8@bot.com', 'Bot8');
+INSERT INTO Comment_username(user_username, date_comment, comment, user_mail,video_id) VALUES ('Bot10', dateof(now()), 'Good Video Fellow Bot', 'user10@bot.com', 10);
+INSERT INTO Comment_video(video_id, date_comment, comment, user_mail, user_username) VALUES (10, dateof(now()), 'Good Video Fellow Bot', 'user10@bot.com', 'Bot10');
+INSERT INTO Comment_username(user_username, date_comment, comment, user_mail,video_id) VALUES ('Bot1', dateof(now()), 'Goodbye', 'user1@bot.com', 11); 
+INSERT INTO Comment_video(video_id, date_comment, comment, user_mail, user_username) VALUES (11, dateof(now()), 'Goodbye', 'user1@bot.com', 'Bot1');
+INSERT INTO Comment_username(user_username, date_comment, comment, user_mail,video_id) VALUES ('Bot2', dateof(now()), 'Goodbye', 'user2@bot.com', 11); 
+INSERT INTO Comment_video(video_id, date_comment, comment, user_mail, user_username) VALUES (11, dateof(now()), 'Goodbye', 'user2@bot.com', 'Bot2');
+INSERT INTO Comment_username(user_username, date_comment, comment, user_mail,video_id) VALUES ('Bot3', dateof(now()), 'Goodbye', 'user3@bot.com', 11); 
+INSERT INTO Comment_video(video_id, date_comment, comment, user_mail, user_username) VALUES (11, dateof(now()), 'Goodbye', 'user3@bot.com', 'Bot3');
+INSERT INTO Comment_username(user_username, date_comment, comment, user_mail,video_id) VALUES ('Bot4', dateof(now()), 'Goodbye', 'user4@bot.com', 11); 
+INSERT INTO Comment_video(video_id, date_comment, comment, user_mail, user_username) VALUES (11, dateof(now()), 'Goodbye', 'user4@bot.com', 'Bot4');
+INSERT INTO Comment_username(user_username, date_comment, comment, user_mail,video_id) VALUES ('Bot5', dateof(now()), 'Goodbye', 'user5@bot.com', 11); 
+INSERT INTO Comment_video(video_id, date_comment, comment, user_mail, user_username) VALUES (11, dateof(now()), 'Goodbye', 'user5@bot.com', 'Bot5');
+
+cqlsh:cbd_aula3_2> SELECT * FROM Comment_username;
+
+ user_username | date_comment                    | comment               | user_mail      | video_id
+---------------+---------------------------------+-----------------------+----------------+----------
+          Bot2 | 2021-12-09 10:20:34.179000+0000 |               Goodbye |  user2@bot.com |       11
+          Bot2 | 2021-12-09 10:20:34.060000+0000 |     Automated Comment |  user2@bot.com |        1
+          Bot1 | 2021-12-09 10:20:34.165000+0000 |               Goodbye |  user1@bot.com |       11
+          Bot1 | 2021-12-09 10:20:34.043000+0000 |     Automated Comment |  user1@bot.com |        1
+         Bot10 | 2021-12-09 10:20:34.152000+0000 | Good Video Fellow Bot | user10@bot.com |       10
+          Bot5 | 2021-12-09 10:20:34.223000+0000 |               Goodbye |  user5@bot.com |       11
+          Bot5 | 2021-12-09 10:20:34.126000+0000 | Good Video Fellow Bot |  user5@bot.com |        6
+          Bot8 | 2021-12-09 10:20:34.139000+0000 | Good Video Fellow Bot |  user8@bot.com |        9
+          Bot3 | 2021-12-09 10:20:34.194000+0000 |               Goodbye |  user3@bot.com |       11
+          Bot3 | 2021-12-09 10:20:34.091000+0000 | Good Video Fellow Bot |  user3@bot.com |        2
+          Bot3 | 2021-12-09 10:20:34.077000+0000 |     Automated Comment |  user3@bot.com |        1
+          Bot4 | 2021-12-09 10:20:34.209000+0000 |               Goodbye |  user4@bot.com |       11
+          Bot4 | 2021-12-09 10:20:34.107000+0000 | Good Video Fellow Bot |  user4@bot.com |        2
+
+
+cqlsh:cbd_aula3_2> SELECT * FROM Comment_video;
+
+ video_id | date_comment                    | comment               | user_mail      | user_username
+----------+---------------------------------+-----------------------+----------------+---------------
+       10 | 2021-12-09 09:55:14.990000+0000 | Good Video Fellow Bot | user10@bot.com |         Bot10
+       11 | 2021-12-09 09:55:15.721000+0000 |               Goodbye |  user5@bot.com |          Bot5
+       11 | 2021-12-09 09:55:15.051000+0000 |               Goodbye |  user4@bot.com |          Bot4
+       11 | 2021-12-09 09:55:15.037000+0000 |               Goodbye |  user3@bot.com |          Bot3
+       11 | 2021-12-09 09:55:15.021000+0000 |               Goodbye |  user2@bot.com |          Bot2
+       11 | 2021-12-09 09:55:15.006000+0000 |               Goodbye |  user1@bot.com |          Bot1
+        1 | 2021-12-09 09:55:14.911000+0000 |     Automated Comment |  user3@bot.com |          Bot3
+        1 | 2021-12-09 09:55:14.895000+0000 |     Automated Comment |  user2@bot.com |          Bot2
+        1 | 2021-12-09 09:55:14.877000+0000 |     Automated Comment |  user1@bot.com |          Bot1
+        2 | 2021-12-09 09:55:14.943000+0000 | Good Video Fellow Bot |  user4@bot.com |          Bot4
+        2 | 2021-12-09 09:55:14.926000+0000 | Good Video Fellow Bot |  user3@bot.com |          Bot3
+        6 | 2021-12-09 09:55:14.960000+0000 | Good Video Fellow Bot |  user5@bot.com |          Bot5
+        9 | 2021-12-09 09:55:14.975000+0000 | Good Video Fellow Bot |  user8@bot.com |          Bot8
+
+
+# FOLLOW
+
+INSERT INTO Follow(user_mail, video_id) VALUES ('user2@bot.com', 3);
+INSERT INTO Follow(user_mail, video_id) VALUES ('user2@bot.com', 9);
+INSERT INTO Follow(user_mail, video_id) VALUES ('user10@bot.com', 6);
+INSERT INTO Follow(user_mail, video_id) VALUES ('user12@bot.com', 7);
+INSERT INTO Follow(user_mail, video_id) VALUES ('user2@bot.com', 4);
+INSERT INTO Follow(user_mail, video_id) VALUES ('user2@bot.com', 8);
+INSERT INTO Follow(user_mail, video_id) VALUES ('user1@bot.com', 2);
+INSERT INTO Follow(user_mail, video_id) VALUES ('ds@test.com', 11);
+INSERT INTO Follow(user_mail, video_id) VALUES ('user6@bot.com', 10);
+INSERT INTO Follow(user_mail, video_id) VALUES ('user4@bot.com', 5);
+INSERT INTO Follow(user_mail, video_id) VALUES ('flip@test.com', 1);
+
+cqlsh:cbd_aula3_2> SELECT * FROM Follow;
+
+ video_id | user_mail
+----------+----------------
+        5 |  user4@bot.com
+       10 |  user6@bot.com
+       11 |    ds@test.com
+        1 |  flip@test.com
+        8 |  user2@bot.com
+        2 |  user1@bot.com
+        4 |  user2@bot.com
+        7 | user12@bot.com
+        6 | user10@bot.com
+        9 |  user2@bot.com
+        3 |  user2@bot.com
+
+
+#USER FOLLOW VIDEO
+
+INSERT INTO User_follow_video (user_mail,video_id) VALUES ('user10@bot.com', [11, 1]);
+INSERT INTO User_follow_video (user_mail,video_id) VALUES ('user1@bot.com', [11, 1,2]);
+INSERT INTO User_follow_video (user_mail,video_id) VALUES ('user2@bot.com', [11, 1,6]);
+INSERT INTO User_follow_video (user_mail,video_id) VALUES ('user3@bot.com', [11, 1]);
+INSERT INTO User_follow_video (user_mail,video_id) VALUES ('user4@bot.com', [11, 1,4]);
+INSERT INTO User_follow_video (user_mail,video_id) VALUES ('user5@bot.com', [11, 1]);
+INSERT INTO User_follow_video (user_mail,video_id) VALUES ('user6@bot.com', [11, 1]);
+INSERT INTO User_follow_video (user_mail,video_id) VALUES ('user7@bot.com', [11, 1]);
+INSERT INTO User_follow_video (user_mail,video_id) VALUES ('user8@bot.com', [11, 1]);
+INSERT INTO User_follow_video (user_mail,video_id) VALUES ('user9@bot.com', [11, 1]);
+
+cqlsh:cbd_aula3_2> SELECT * FROM User_follow_video;
+
+ user_mail      | video_id
+----------------+------------
+  user8@bot.com |    [11, 1]
+  user1@bot.com | [11, 1, 2]
+  user5@bot.com |    [11, 1]
+ user10@bot.com |    [11, 1]
+  user2@bot.com | [11, 1, 6]
+  user9@bot.com |    [11, 1]
+  user4@bot.com | [11, 1, 4]
+  user6@bot.com |    [11, 1]
+  user7@bot.com |    [11, 1]
+  user3@bot.com |    [11, 1]
+
+
+#EVENT
+
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user2@bot.com', 1, dateof(now()), 0, 'Play');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user2@bot.com', 1, dateof(now()), 98, 'Pause');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user2@bot.com', 1, dateof(now()), 98, 'Play');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user2@bot.com', 1, dateof(now()), 120, 'Stop');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user4@bot.com', 11, dateof(now()), 0, 'Play');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user4@bot.com', 11, dateof(now()), 20, 'Stop');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user6@bot.com', 11, dateof(now()), 0, 'Play');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user6@bot.com', 11, dateof(now()), 0, 'Stop');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user9@bot.com', 11, dateof(now()), 0, 'Play');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user9@bot.com', 11, dateof(now()), 20, 'Stop');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user4@bot.com', 5, dateof(now()), 51, 'Play');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user4@bot.com', 5, dateof(now()), 150, 'Pause');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user4@bot.com', 5, dateof(now()), 150, 'Stop');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user10@bot.com', 10, dateof(now()), 0, 'Play');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user10@bot.com', 10, dateof(now()), 124, 'Pause');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user10@bot.com', 10, dateof(now()), 124, 'Play');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user10@bot.com', 10, dateof(now()), 242, 'Pause');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user10@bot.com', 10, dateof(now()), 242, 'Play');
+INSERT INTO Event(user_mail, video_id, date_event, date_video, tipo) VALUES ('user10@bot.com', 10, dateof(now()), 300, 'Stop');
+
+cqlsh:cbd_aula3_2> SELECT * FROM Event;
+
+ user_mail      | video_id | date_event                      | date_video | tipo
+----------------+----------+---------------------------------+------------+-------
+ user10@bot.com |       10 | 2021-12-09 10:32:10.652000+0000 |        300 |  Stop
+ user10@bot.com |       10 | 2021-12-09 10:32:10.248000+0000 |        242 |  Play
+ user10@bot.com |       10 | 2021-12-09 10:32:10.241000+0000 |        242 | Pause
+ user10@bot.com |       10 | 2021-12-09 10:32:10.234000+0000 |        124 |  Play
+ user10@bot.com |       10 | 2021-12-09 10:32:10.228000+0000 |        124 | Pause
+ user10@bot.com |       10 | 2021-12-09 10:32:10.220000+0000 |          0 |  Play
+  user4@bot.com |       11 | 2021-12-09 10:32:10.164000+0000 |         20 |  Stop
+  user4@bot.com |       11 | 2021-12-09 10:32:10.158000+0000 |          0 |  Play
+  user2@bot.com |        1 | 2021-12-09 10:32:10.146000+0000 |        120 |  Stop
+  user2@bot.com |        1 | 2021-12-09 10:32:10.139000+0000 |         98 |  Play
+  user2@bot.com |        1 | 2021-12-09 10:32:10.131000+0000 |         98 | Pause
+  user2@bot.com |        1 | 2021-12-09 10:32:10.124000+0000 |          0 |  Play
+  user6@bot.com |       11 | 2021-12-09 10:32:10.179000+0000 |          0 |  Stop
+  user6@bot.com |       11 | 2021-12-09 10:32:10.171000+0000 |          0 |  Play
+  user9@bot.com |       11 | 2021-12-09 10:32:10.194000+0000 |         20 |  Stop
+  user9@bot.com |       11 | 2021-12-09 10:32:10.186000+0000 |          0 |  Play
+  user4@bot.com |        5 | 2021-12-09 10:32:10.214000+0000 |        150 |  Stop
+  user4@bot.com |        5 | 2021-12-09 10:32:10.208000+0000 |        150 | Pause
+  user4@bot.com |        5 | 2021-12-09 10:32:10.201000+0000 |         51 |  Play
+
+
+# RATING
+
+INSERT INTO Rating(rating, video_id, rating_id) VALUES (2, 3, 1);
+INSERT INTO Rating(rating, video_id, rating_id) VALUES (10, 9, 2);
+INSERT INTO Rating(rating, video_id, rating_id) VALUES (9, 6, 3);
+INSERT INTO Rating(rating, video_id, rating_id) VALUES (1, 7, 4);
+INSERT INTO Rating(rating, video_id, rating_id) VALUES (6, 4, 5);
+INSERT INTO Rating(rating, video_id, rating_id) VALUES (4, 8, 6);
+INSERT INTO Rating(rating, video_id, rating_id) VALUES (3, 2, 7);
+INSERT INTO Rating(rating, video_id, rating_id) VALUES (1, 11, 8);
+INSERT INTO Rating(rating, video_id, rating_id) VALUES (6, 10, 9);
+INSERT INTO Rating(rating, video_id, rating_id) VALUES (5, 5, 10);
+INSERT INTO Rating(rating, video_id, rating_id) VALUES (4, 1, 11);
+
+cqlsh:cbd_aula3_2> SELECT * FROM Rating;
+
+ video_id | rating | rating_id
+----------+--------+-----------
+        5 |      5 |        10
+       10 |      6 |         9
+       11 |      1 |         8
+        1 |      4 |        11
+        8 |      4 |         6
+        2 |      3 |         7
+        4 |      6 |         5
+        7 |      1 |         4
+        6 |      9 |         3
+        9 |     10 |         2
+        3 |      2 |         1
+
+
+### JSON ###
+cqlsh:cbd_aula3_2> DESCRIBE TABLES
+
+comment_username  event   rating             users        video_por_tag  videos
+comment_video     follow  user_follow_video  video_autor  video_tag
+
+cqlsh:cbd_aula3_2> SELECT JSON * FROM Users;
+
+ [json]
+-------------------------------------------------------------------------------------------------------------------
+    {"email": "user8@bot.com", "date_register": "2021-12-09 09:31:23.146Z", "nome": "Bot8", "username": "Tester8"}
+    {"email": "user1@bot.com", "date_register": "2021-12-09 09:31:23.071Z", "nome": "Bot1", "username": "Tester1"}
+    {"email": "user5@bot.com", "date_register": "2021-12-09 09:31:23.114Z", "nome": "Bot5", "username": "Tester5"}
+ {"email": "user10@bot.com", "date_register": "2021-12-09 09:31:23.165Z", "nome": "Bot10", "username": "Tester10"}
+ {"email": "user11@bot.com", "date_register": "2021-12-09 09:31:23.182Z", "nome": "Bot11", "username": "Tester11"}
+ {"email": "user13@bot.com", "date_register": "2021-12-09 09:31:23.201Z", "nome": "Bot13", "username": "Tester13"}
+ {"email": "user14@bot.com", "date_register": "2021-12-09 09:31:23.210Z", "nome": "Bot14", "username": "Tester14"}
+    {"email": "user2@bot.com", "date_register": "2021-12-09 09:31:23.081Z", "nome": "Bot2", "username": "Tester2"}
+ {"email": "user15@bot.com", "date_register": "2021-12-09 09:31:25.561Z", "nome": "Bot15", "username": "Tester15"}
+    {"email": "user9@bot.com", "date_register": "2021-12-09 09:31:23.155Z", "nome": "Bot9", "username": "Tester9"}
+    {"email": "user4@bot.com", "date_register": "2021-12-09 09:31:23.103Z", "nome": "Bot4", "username": "Tester4"}
+  {"email": "flip@test.com", "date_register": "2021-12-09 09:31:23.055Z", "nome": "Filipe", "username": "Maestro"}
+    {"email": "user6@bot.com", "date_register": "2021-12-09 09:31:23.124Z", "nome": "Bot6", "username": "Tester6"}
+    {"email": "user7@bot.com", "date_register": "2021-12-09 09:31:23.134Z", "nome": "Bot7", "username": "Tester7"}
+    {"email": "user3@bot.com", "date_register": "2021-12-09 09:31:23.093Z", "nome": "Bot3", "username": "Tester3"}
+ {"email": "user12@bot.com", "date_register": "2021-12-09 09:31:23.192Z", "nome": "Bot12", "username": "Tester12"}
+
+cqlsh:cbd_aula3_2> SELECT JSON * FROM videos;
+
+ [json]
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+          {"video_id": 5, "date_register": "2021-12-09 09:39:48.204Z", "autor": "user10@bot.com", "descricao": "Made by a bot", "tags": ["Fitness", "Automated"], "title": "Fitness Automated Video"}
+                                         {"video_id": 10, "date_register": "2021-12-09 09:39:48.255Z", "autor": "ds@test.com", "descricao": "The final video", "tags": ["Final"], "title": "The end"}
+                      {"video_id": 1, "date_register": "2021-12-09 09:39:48.149Z", "autor": "ds@test.com", "descricao": "A day at the zoo", "tags": ["Zoo", "Cute", "Animals"], "title": "Zoo Video"}
+           {"video_id": 8, "date_register": "2021-12-09 09:39:48.233Z", "autor": "user2@bot.com", "descricao": "Made by a bot", "tags": ["Gaming", "Automated"], "title": "Gaming Automated Video 2"}
+                 {"video_id": 2, "date_register": "2021-12-09 09:39:48.173Z", "autor": "user2@bot.com", "descricao": "Made by a bot", "tags": ["Cute", "Automated"], "title": "Cute Automated Video"}
+             {"video_id": 2, "date_register": "2021-12-09 09:39:48.161Z", "autor": "user1@bot.com", "descricao": "Made by a bot", "tags": ["Creepy", "Automated"], "title": "Creepy Automated Video"}
+           {"video_id": 4, "date_register": "2021-12-09 09:39:48.193Z", "autor": "user4@bot.com", "descricao": "Made by a bot", "tags": ["Fantasy", "Automated"], "title": "Fantasy Automated Video"}
+             {"video_id": 7, "date_register": "2021-12-09 09:39:48.223Z", "autor": "user2@bot.com", "descricao": "Made by a bot", "tags": ["Gaming", "Automated"], "title": "Gaming Automated Video"}
+                {"video_id": 6, "date_register": "2021-12-09 09:39:48.213Z", "autor": "user12@bot.com", "descricao": "Made by a bot", "tags": ["NSFW", "Automated"], "title": "NSFW Automated Video"}
+ {"video_id": 9, "date_register": "2021-12-09 09:39:48.245Z", "autor": "user6@bot.com", "descricao": "Made by a bot", "tags": ["Mindblowing", "Automated"], "title": "Mindblowing Automated Video 2"}
+   {"video_id": 3, "date_register": "2021-12-09 09:39:48.183Z", "autor": "user2@bot.com", "descricao": "Made by a bot", "tags": ["Mindblowing", "Automated"], "title": "Mindblowing Automated Video"}
+
+cqlsh:cbd_aula3_2> SELECT JSON * FROM video_por_tag;
+
+ [json]
+----------------------------------------------------------------
+                               {"tag": "NSFW", "video_id": [7]}
+                            {"tag": "Cute", "video_id": [1, 3]}
+                    {"tag": "Mindblowing", "video_id": [10, 4]}
+                          {"tag": "Gaming", "video_id": [8, 9]}
+                            {"tag": "Fitness", "video_id": [6]}
+                            {"tag": "Animals", "video_id": [1]}
+                                {"tag": "Zoo", "video_id": [1]}
+                             {"tag": "Final", "video_id": [11]}
+ {"tag": "Automated", "video_id": [5, 10, 8, 2, 4, 7, 6, 9, 3]}
+                             {"tag": "Creepy", "video_id": [2]}
+                            {"tag": "Fantasy", "video_id": [5]}
+
+cqlsh:cbd_aula3_2> SELECT JSON * FROM video_tag;
+
+ [json]
+----------------------------------------
+         {"tag": "NSFW", "video_id": 7}
+         {"tag": "Cute", "video_id": 1}
+         {"tag": "Cute", "video_id": 3}
+  {"tag": "Mindblowing", "video_id": 4}
+ {"tag": "Mindblowing", "video_id": 10}
+       {"tag": "Gaming", "video_id": 8}
+       {"tag": "Gaming", "video_id": 9}
+      {"tag": "Fitness", "video_id": 6}
+      {"tag": "Animals", "video_id": 1}
+          {"tag": "Zoo", "video_id": 1}
+       {"tag": "Final", "video_id": 11}
+    {"tag": "Automated", "video_id": 2}
+    {"tag": "Automated", "video_id": 4}
+    {"tag": "Automated", "video_id": 5}
+    {"tag": "Automated", "video_id": 6}
+    {"tag": "Automated", "video_id": 7}
+    {"tag": "Automated", "video_id": 8}
+   {"tag": "Automated", "video_id": 10}
+       {"tag": "Creepy", "video_id": 2}
+     {"tag": "Automate", "video_id": 9}
+      {"tag": "Fantasy", "video_id": 5}
+
+cqlsh:cbd_aula3_2> SELECT JSON * FROM video_autor;
+
+ [json]
+-----------------------------------------------------------------------------------------------------------------
+    {"user_mail": "user1@bot.com", "date_register": "2020-02-03 12:26:00.000Z", "video_id": 2, "author": "Bot1"}
+  {"user_mail": "user10@bot.com", "date_register": "2020-02-03 12:26:19.000Z", "video_id": 6, "author": "Bot10"}
+    {"user_mail": "user2@bot.com", "date_register": "2020-02-03 12:26:05.000Z", "video_id": 3, "author": "Bot2"}
+    {"user_mail": "user2@bot.com", "date_register": "2020-02-03 12:26:11.000Z", "video_id": 4, "author": "Bot2"}
+    {"user_mail": "user2@bot.com", "date_register": "2020-02-03 12:26:29.000Z", "video_id": 8, "author": "Bot2"}
+    {"user_mail": "user2@bot.com", "date_register": "2020-02-03 12:26:33.000Z", "video_id": 9, "author": "Bot2"}
+  {"user_mail": "ds@test.com", "date_register": "2020-02-03 12:26:41.000Z", "video_id": 11, "author": "FenixDS"}
+    {"user_mail": "user4@bot.com", "date_register": "2020-02-03 12:26:16.000Z", "video_id": 5, "author": "Bot4"}
+ {"user_mail": "flip@test.com", "date_register": "2020-02-03 12:25:56.000Z", "video_id": 1, "author": "Maestro"}
+   {"user_mail": "user6@bot.com", "date_register": "2020-02-03 12:26:38.000Z", "video_id": 10, "author": "Bot6"}
+  {"user_mail": "user12@bot.com", "date_register": "2020-02-03 12:26:25.000Z", "video_id": 7, "author": "Bot12"}
+
+cqlsh:cbd_aula3_2> SELECT JSON * FROM comment_username;
+
+ [json]
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+                 {"user_username": "Bot2", "date_comment": "2021-12-09 10:20:34.179Z", "comment": "Goodbye", "user_mail": "user2@bot.com", "video_id": 11}
+        {"user_username": "Bot2", "date_comment": "2021-12-09 10:20:34.060Z", "comment": "Automated Comment", "user_mail": "user2@bot.com", "video_id": 1}
+                 {"user_username": "Bot1", "date_comment": "2021-12-09 10:20:34.165Z", "comment": "Goodbye", "user_mail": "user1@bot.com", "video_id": 11}
+        {"user_username": "Bot1", "date_comment": "2021-12-09 10:20:34.043Z", "comment": "Automated Comment", "user_mail": "user1@bot.com", "video_id": 1}
+ {"user_username": "Bot10", "date_comment": "2021-12-09 10:20:34.152Z", "comment": "Good Video Fellow Bot", "user_mail": "user10@bot.com", "video_id": 10}
+                 {"user_username": "Bot5", "date_comment": "2021-12-09 10:20:34.223Z", "comment": "Goodbye", "user_mail": "user5@bot.com", "video_id": 11}
+    {"user_username": "Bot5", "date_comment": "2021-12-09 10:20:34.126Z", "comment": "Good Video Fellow Bot", "user_mail": "user5@bot.com", "video_id": 6}
+    {"user_username": "Bot8", "date_comment": "2021-12-09 10:20:34.139Z", "comment": "Good Video Fellow Bot", "user_mail": "user8@bot.com", "video_id": 9}
+                 {"user_username": "Bot3", "date_comment": "2021-12-09 10:20:34.194Z", "comment": "Goodbye", "user_mail": "user3@bot.com", "video_id": 11}
+    {"user_username": "Bot3", "date_comment": "2021-12-09 10:20:34.091Z", "comment": "Good Video Fellow Bot", "user_mail": "user3@bot.com", "video_id": 2}
+        {"user_username": "Bot3", "date_comment": "2021-12-09 10:20:34.077Z", "comment": "Automated Comment", "user_mail": "user3@bot.com", "video_id": 1}
+                 {"user_username": "Bot4", "date_comment": "2021-12-09 10:20:34.209Z", "comment": "Goodbye", "user_mail": "user4@bot.com", "video_id": 11}
+    {"user_username": "Bot4", "date_comment": "2021-12-09 10:20:34.107Z", "comment": "Good Video Fellow Bot", "user_mail": "user4@bot.com", "video_id": 2}
+
+cqlsh:cbd_aula3_2> SELECT JSON * FROM comment_video;
+
+ [json]
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"video_id": 10, "date_comment": "2021-12-09 09:55:14.990Z", "comment": "Good Video Fellow Bot", "user_mail": "user10@bot.com", "user_username": "Bot10"}
+                 {"video_id": 11, "date_comment": "2021-12-09 09:55:15.721Z", "comment": "Goodbye", "user_mail": "user5@bot.com", "user_username": "Bot5"}
+                 {"video_id": 11, "date_comment": "2021-12-09 09:55:15.051Z", "comment": "Goodbye", "user_mail": "user4@bot.com", "user_username": "Bot4"}
+                 {"video_id": 11, "date_comment": "2021-12-09 09:55:15.037Z", "comment": "Goodbye", "user_mail": "user3@bot.com", "user_username": "Bot3"}
+                 {"video_id": 11, "date_comment": "2021-12-09 09:55:15.021Z", "comment": "Goodbye", "user_mail": "user2@bot.com", "user_username": "Bot2"}
+                 {"video_id": 11, "date_comment": "2021-12-09 09:55:15.006Z", "comment": "Goodbye", "user_mail": "user1@bot.com", "user_username": "Bot1"}
+        {"video_id": 1, "date_comment": "2021-12-09 09:55:14.911Z", "comment": "Automated Comment", "user_mail": "user3@bot.com", "user_username": "Bot3"}
+        {"video_id": 1, "date_comment": "2021-12-09 09:55:14.895Z", "comment": "Automated Comment", "user_mail": "user2@bot.com", "user_username": "Bot2"}
+        {"video_id": 1, "date_comment": "2021-12-09 09:55:14.877Z", "comment": "Automated Comment", "user_mail": "user1@bot.com", "user_username": "Bot1"}
+    {"video_id": 2, "date_comment": "2021-12-09 09:55:14.943Z", "comment": "Good Video Fellow Bot", "user_mail": "user4@bot.com", "user_username": "Bot4"}
+    {"video_id": 2, "date_comment": "2021-12-09 09:55:14.926Z", "comment": "Good Video Fellow Bot", "user_mail": "user3@bot.com", "user_username": "Bot3"}
+    {"video_id": 6, "date_comment": "2021-12-09 09:55:14.960Z", "comment": "Good Video Fellow Bot", "user_mail": "user5@bot.com", "user_username": "Bot5"}
+    {"video_id": 9, "date_comment": "2021-12-09 09:55:14.975Z", "comment": "Good Video Fellow Bot", "user_mail": "user8@bot.com", "user_username": "Bot8"}
+
+cqlsh:cbd_aula3_2> SELECT JSON * FROM follow ;
+
+ [json]
+------------------------------------------------
+  {"video_id": 5, "user_mail": "user4@bot.com"}
+ {"video_id": 10, "user_mail": "user6@bot.com"}
+   {"video_id": 11, "user_mail": "ds@test.com"}
+  {"video_id": 1, "user_mail": "flip@test.com"}
+  {"video_id": 8, "user_mail": "user2@bot.com"}
+  {"video_id": 2, "user_mail": "user1@bot.com"}
+  {"video_id": 4, "user_mail": "user2@bot.com"}
+ {"video_id": 7, "user_mail": "user12@bot.com"}
+ {"video_id": 6, "user_mail": "user10@bot.com"}
+  {"video_id": 9, "user_mail": "user2@bot.com"}
+  {"video_id": 3, "user_mail": "user2@bot.com"}
+
+cqlsh:cbd_aula3_2> SELECT JSON * FROM user_follow_video  ;
+
+ [json]
+--------------------------------------------------------
+    {"user_mail": "user8@bot.com", "video_id": [11, 1]}
+ {"user_mail": "user1@bot.com", "video_id": [11, 1, 2]}
+    {"user_mail": "user5@bot.com", "video_id": [11, 1]}
+   {"user_mail": "user10@bot.com", "video_id": [11, 1]}
+ {"user_mail": "user2@bot.com", "video_id": [11, 1, 6]}
+    {"user_mail": "user9@bot.com", "video_id": [11, 1]}
+ {"user_mail": "user4@bot.com", "video_id": [11, 1, 4]}
+    {"user_mail": "user6@bot.com", "video_id": [11, 1]}
+    {"user_mail": "user7@bot.com", "video_id": [11, 1]}
+    {"user_mail": "user3@bot.com", "video_id": [11, 1]}
+
+cqlsh:cbd_aula3_2> SELECT JSON * FROM event   ;
+
+ [json]
+-------------------------------------------------------------------------------------------------------------------------------
+  {"user_mail": "user10@bot.com", "video_id": 10, "date_event": "2021-12-09 10:32:10.652Z", "date_video": 300, "tipo": "Stop"}
+  {"user_mail": "user10@bot.com", "video_id": 10, "date_event": "2021-12-09 10:32:10.248Z", "date_video": 242, "tipo": "Play"}
+ {"user_mail": "user10@bot.com", "video_id": 10, "date_event": "2021-12-09 10:32:10.241Z", "date_video": 242, "tipo": "Pause"}
+  {"user_mail": "user10@bot.com", "video_id": 10, "date_event": "2021-12-09 10:32:10.234Z", "date_video": 124, "tipo": "Play"}
+ {"user_mail": "user10@bot.com", "video_id": 10, "date_event": "2021-12-09 10:32:10.228Z", "date_video": 124, "tipo": "Pause"}
+    {"user_mail": "user10@bot.com", "video_id": 10, "date_event": "2021-12-09 10:32:10.220Z", "date_video": 0, "tipo": "Play"}
+    {"user_mail": "user4@bot.com", "video_id": 11, "date_event": "2021-12-09 10:32:10.164Z", "date_video": 20, "tipo": "Stop"}
+     {"user_mail": "user4@bot.com", "video_id": 11, "date_event": "2021-12-09 10:32:10.158Z", "date_video": 0, "tipo": "Play"}
+    {"user_mail": "user2@bot.com", "video_id": 1, "date_event": "2021-12-09 10:32:10.146Z", "date_video": 120, "tipo": "Stop"}
+     {"user_mail": "user2@bot.com", "video_id": 1, "date_event": "2021-12-09 10:32:10.139Z", "date_video": 98, "tipo": "Play"}
+    {"user_mail": "user2@bot.com", "video_id": 1, "date_event": "2021-12-09 10:32:10.131Z", "date_video": 98, "tipo": "Pause"}
+      {"user_mail": "user2@bot.com", "video_id": 1, "date_event": "2021-12-09 10:32:10.124Z", "date_video": 0, "tipo": "Play"}
+     {"user_mail": "user6@bot.com", "video_id": 11, "date_event": "2021-12-09 10:32:10.179Z", "date_video": 0, "tipo": "Stop"}
+     {"user_mail": "user6@bot.com", "video_id": 11, "date_event": "2021-12-09 10:32:10.171Z", "date_video": 0, "tipo": "Play"}
+    {"user_mail": "user9@bot.com", "video_id": 11, "date_event": "2021-12-09 10:32:10.194Z", "date_video": 20, "tipo": "Stop"}
+     {"user_mail": "user9@bot.com", "video_id": 11, "date_event": "2021-12-09 10:32:10.186Z", "date_video": 0, "tipo": "Play"}
+    {"user_mail": "user4@bot.com", "video_id": 5, "date_event": "2021-12-09 10:32:10.214Z", "date_video": 150, "tipo": "Stop"}
+   {"user_mail": "user4@bot.com", "video_id": 5, "date_event": "2021-12-09 10:32:10.208Z", "date_video": 150, "tipo": "Pause"}
+     {"user_mail": "user4@bot.com", "video_id": 5, "date_event": "2021-12-09 10:32:10.201Z", "date_video": 51, "tipo": "Play"}
+
+cqlsh:cbd_aula3_2> SELECT JSON * FROM rating  ;
+
+ [json]
+-----------------------------------------------
+ {"video_id": 5, "rating": 5, "rating_id": 10}
+ {"video_id": 10, "rating": 6, "rating_id": 9}
+ {"video_id": 11, "rating": 1, "rating_id": 8}
+ {"video_id": 1, "rating": 4, "rating_id": 11}
+  {"video_id": 8, "rating": 4, "rating_id": 6}
+  {"video_id": 2, "rating": 3, "rating_id": 7}
+  {"video_id": 4, "rating": 6, "rating_id": 5}
+  {"video_id": 7, "rating": 1, "rating_id": 4}
+  {"video_id": 6, "rating": 9, "rating_id": 3}
+ {"video_id": 9, "rating": 10, "rating_id": 2}
+  {"video_id": 3, "rating": 2, "rating_id": 1}
+
+
+
+##### c) ######
+
+#A. Pesquisa de todos os vídeos de determinado autor 
+cqlsh:cbd_aula3_2> SELECT * FROM video_autor WHERE user_mail = 'flip@test.com';
+
+ user_mail     | date_register                   | video_id | author
+---------------+---------------------------------+----------+---------
+ flip@test.com | 2020-02-03 12:25:56.000000+0000 |        1 | Maestro
+
+
+#B. Pesquisa de comentários por utilizador, ordenado inversamente pela data
+cqlsh:cbd_aula3_2> SELECT * FROM Comment_username WHERE user_username = 'Bot4';
+
+ user_username | date_comment                    | comment               | user_mail     | video_id
+---------------+---------------------------------+-----------------------+---------------+----------
+          Bot4 | 2021-12-09 10:20:34.209000+0000 |               Goodbye | user4@bot.com |       11
+          Bot4 | 2021-12-09 10:20:34.107000+0000 | Good Video Fellow Bot | user4@bot.com |        2
+
+#C. Pesquisa de comentários por vídeos, ordenado inversamente pela data
+cqlsh:cbd_aula3_2> SELECT * FROM Comment_video WHERE video_id = 1;
+
+ video_id | date_comment                    | comment           | user_mail     | user_username
+----------+---------------------------------+-------------------+---------------+---------------
+        1 | 2021-12-09 09:55:14.911000+0000 | Automated Comment | user3@bot.com |          Bot3
+        1 | 2021-12-09 09:55:14.895000+0000 | Automated Comment | user2@bot.com |          Bot2
+        1 | 2021-12-09 09:55:14.877000+0000 | Automated Comment | user1@bot.com |          Bot1
+
+#D. Pesquisa do rating médio de um vídeo e quantas vezes foi votado;
+cqlsh:cbd_aula3_2> SELECT avg(rating) as Average, count(rating) as NoReviews FROM Rating WHERE video_id = 11;
+
+ average | noreviews
+---------+-----------
+       1 |         1
+
+
+    
+##### D) #####
+
+#1. Os últimos 3 comentários introduzidos para um vídeo
+
+cqlsh:cbd_aula3_2> SELECT * FROM comment_video WHERE video_id = 1 LIMIT 3;
+
+ video_id | date_comment                    | comment           | user_mail     | user_username
+----------+---------------------------------+-------------------+---------------+---------------
+        1 | 2021-12-09 10:20:34.084000+0000 | Automated Comment | user3@bot.com |          Bot3
+        1 | 2021-12-09 10:20:34.068000+0000 | Automated Comment | user2@bot.com |          Bot2
+        1 | 2021-12-09 10:20:34.052000+0000 | Automated Comment | user1@bot.com |          Bot1
+
+
+#2. Lista das tags de determinado vídeo
+cqlsh:cbd_aula3_2> SELECT tags FROM Videos WHERE video_id = 7;
+
+ tags
+-------------------------
+ ['Gaming', 'Automated']
+
+
+#3. Todos os vídeos com a tag Gaming
+cqlsh:cbd_aula3_2> SELECT * FROM Video_tag WHERE tag='Gaming'; 
+
+ tag    | video_id
+--------+----------
+ Gaming |        8
+ Gaming |        9
+
+
+#4. Os últimos 5 eventos de determinado vídeo realizados por um utilizador
+cqlsh:cbd_aula3_2> SELECT * FROM Event WHERE user_mail = 'user10@bot.com' AND video_id = 10 LIMIT 5;
+
+ user_mail      | video_id | date_event                      | date_video | tipo
+----------------+----------+---------------------------------+------------+-------
+ user10@bot.com |       10 | 2021-12-09 10:32:10.652000+0000 |        300 |  Stop
+ user10@bot.com |       10 | 2021-12-09 10:32:10.248000+0000 |        242 |  Play
+ user10@bot.com |       10 | 2021-12-09 10:32:10.241000+0000 |        242 | Pause
+ user10@bot.com |       10 | 2021-12-09 10:32:10.234000+0000 |        124 |  Play
+ user10@bot.com |       10 | 2021-12-09 10:32:10.228000+0000 |        124 | Pause
+
+
+#5. Vídeos partilhados por determinado utilizador num determinado período de tempo (Agosto de 2017, por exemplo)
+cqlsh:cbd_aula3_2> SELECT * FROM Video_autor WHERE user_mail = 'ds@test.com' AND date_register > '2020-02-03 12:26:00' ;
+
+ user_mail   | date_register                   | video_id | author
+-------------+---------------------------------+----------+---------
+ ds@test.com | 2020-02-03 12:26:41.000000+0000 |       11 | FenixDS
+
+
+#6. Os últimos 10 vídeos, ordenado inversamente pela data da partilhada
+Impossivel porque Cassandra não permite Global Querying. Seria possivel se se quisesse os ultimos 10 videos de um dado user
+
+
+#7. Todos os seguidores (followers) de determinado vídeo
+cqlsh:cbd_aula3_2> Select * from Follow WHERE video_id = 11;
+
+ video_id | user_mail
+----------+-------------
+       11 | ds@test.com
+
+
+#8. Todos os comentários (dos vídeos) que determinado utilizador está a seguir (following)
+cqlsh:cbd_aula3_2> SELECT * FROM User_follow_video WHERE user_mail = 'user4@bot.com';
+
+ user_email    | video_ids
+---------------+------------
+ user4@bot.com | [11, 1, 4]
+
+cqlsh:cbd_aula3_2> SELECT * FROM Comment_video WHERE video_id = 11;
+
+video_id | date_comment                    | comment | user_mail     | user_username
+----------+---------------------------------+---------+---------------+---------------
+       11 | 2021-12-09 10:20:34.622000+0000 | Goodbye | user5@bot.com |          Bot5
+       11 | 2021-12-09 10:20:34.216000+0000 | Goodbye | user4@bot.com |          Bot4
+       11 | 2021-12-09 10:20:34.201000+0000 | Goodbye | user3@bot.com |          Bot3
+       11 | 2021-12-09 10:20:34.186000+0000 | Goodbye | user2@bot.com |          Bot2
+       11 | 2021-12-09 10:20:34.172000+0000 | Goodbye | user1@bot.com |          Bot1
+
+#9. Os 5 vídeos com maior rating
+Impossivel porque Cassandra não permite Global Querying. 
+
+
+#10. Uma query que retorne todos os vídeos e que mostre claramente a forma pela qual estão ordenados
+cqlsh:cbd_aula3_2> SELECT * FROM Videos WHERE video_id in (4,5,6);
+
+ video_id | date_register                   | autor          | descricao     | tags                     | title
+----------+---------------------------------+----------------+---------------+--------------------------+-------------------------
+        4 | 2021-12-09 09:39:48.193000+0000 |  user4@bot.com | Made by a bot | ['Fantasy', 'Automated'] | Fantasy Automated Video
+        5 | 2021-12-09 09:39:48.204000+0000 | user10@bot.com | Made by a bot | ['Fitness', 'Automated'] | Fitness Automated Video
+        6 | 2021-12-09 09:39:48.213000+0000 | user12@bot.com | Made by a bot |    ['NSFW', 'Automated'] |    NSFW Automated Video
+
+#11. Lista com as Tags existentes e o número de vídeos catalogados com cada uma delas
+cqlsh:cbd_aula3_2> SELECT tag, COUNT(video_id) as count FROM Video_tag where tag='Automated';
+
+ tag       | count
+-----------+-------
+ Automated |     7

@@ -1,0 +1,352 @@
+##### TEMA #####
+
+Base de dados para filmes
+
+
+##### KEYSPACE E TABELAS #####
+
+## Keyspace Creation ###
+cqlsh> CREATE KEYSPACE cbd_aula3_4 WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 3};
+cqlsh> USE cbd_aula3_4 ;
+
+
+### Tables ###
+#PERSON
+cqlsh:cbd_aula3_4> create columnfamily Person (
+                        email text,
+                        nome text,
+                        phone_number int,
+                        identification_number int,
+                        primary key(email, identification_number)
+                    ) WITH CLUSTERING ORDER BY (identification_number DESC);
+
+#MOVIES
+cqlsh:cbd_aula3_4> create columnfamily Movies (
+                        movie_id int,
+                        autor text,
+                        date_release timestamp,
+                        descricao text,
+                        tags set<text>,
+                        title text,
+                        primary key(date_release, movie_id)
+                    ) WITH CLUSTERING ORDER BY (movie_id DESC);
+
+#PEOPLE PER MOVIE
+cqlsh:cbd_aula3_4> create columnfamily People_per_Movie (
+                        movie_id int,
+                        personid_role map<int, text>,
+                        primary key(movie_id)
+                    );
+
+#MOVIES PER PERSON
+cqlsh:cbd_aula3_4> create columnfamily Movies_per_Person (
+                        identification_number_person int,
+                        movie_id list<int>,
+                        primary key(identification_number_person)
+                    );
+
+#RATINGS     
+cqlsh:cbd_aula3_4> create columnfamily Rating (
+                    rating int,
+                    movie_id int,
+                    rating_id int,
+                    primary key(movie_id, rating, rating_id)
+                );
+
+
+##### INSERTS) ######
+
+#PERSON
+
+INSERT INTO Person (email, nome, phone_number, identification_number) VALUES ('flip@test.com', 'Filipe', 911111100, 1);
+INSERT INTO Person (email, nome, phone_number, identification_number) VALUES ('user1@bot.com', 'Bot1', 911111101, 2);
+INSERT INTO Person (email, nome, phone_number, identification_number) VALUES ('user2@bot.com', 'Bot2', 911111102, 3);
+INSERT INTO Person (email, nome, phone_number, identification_number) VALUES ('user3@bot.com', 'Bot3', 911111103, 4);
+INSERT INTO Person (email, nome, phone_number, identification_number) VALUES ('user4@bot.com', 'Bot4', 911111104, 5);
+INSERT INTO Person (email, nome, phone_number, identification_number) VALUES ('user5@bot.com', 'Bot5', 911111105, 6);
+INSERT INTO Person (email, nome, phone_number, identification_number) VALUES ('user6@bot.com', 'Bot6', 911111106, 7);
+INSERT INTO Person (email, nome, phone_number, identification_number) VALUES ('user7@bot.com', 'Bot7', 911111107, 8);
+INSERT INTO Person (email, nome, phone_number, identification_number) VALUES ('user8@bot.com', 'Bot8', 911111108, 9);
+INSERT INTO Person (email, nome, phone_number, identification_number) VALUES ('user9@bot.com', 'Bot9', 911111109, 10);
+INSERT INTO Person (email, nome, phone_number, identification_number) VALUES ('user10@bot.com', 'Bot10', 911111110, 11);
+INSERT INTO Person (email, nome, phone_number, identification_number) VALUES ('user11@bot.com', 'Bot11', 911111111, 12);
+INSERT INTO Person (email, nome, phone_number, identification_number) VALUES ('user12@bot.com', 'Bot12', 911111112, 13);
+INSERT INTO Person (email, nome, phone_number, identification_number) VALUES ('user13@bot.com', 'Bot13', 911111113, 14);
+INSERT INTO Person (email, nome, phone_number, identification_number) VALUES ('user14@bot.com', 'Bot14', 911111114, 15);
+INSERT INTO Person (email, nome, phone_number, identification_number) VALUES ('user15@bot.com', 'Bot15', 911111115, 16);
+INSERT INTO Person (email, nome, phone_number, identification_number) VALUES ('user16@bot.com', 'Bot16', 911111116, 17);
+
+cqlsh:cbd_aula3_4> SELECT * FROM Person;
+
+ email          | identification_number | nome   | phone_number
+----------------+-----------------------+--------+--------------
+  user8@bot.com |                     9 |   Bot8 |    911111108
+  user1@bot.com |                     2 |   Bot1 |    911111101
+  user5@bot.com |                     6 |   Bot5 |    911111105
+ user10@bot.com |                    11 |  Bot10 |    911111110
+ user11@bot.com |                    12 |  Bot11 |    911111111
+ user13@bot.com |                    14 |  Bot13 |    911111113
+ user14@bot.com |                    15 |  Bot14 |    911111114
+  user2@bot.com |                     3 |   Bot2 |    911111102
+ user15@bot.com |                    16 |  Bot15 |    911111115
+  user9@bot.com |                    10 |   Bot9 |    911111109
+  user4@bot.com |                     5 |   Bot4 |    911111104
+  flip@test.com |                     1 | Filipe |    911111100
+  user6@bot.com |                     7 |   Bot6 |    911111106
+  user7@bot.com |                     8 |   Bot7 |    911111107
+  user3@bot.com |                     4 |   Bot3 |    911111103
+ user12@bot.com |                    13 |  Bot12 |    911111112
+
+
+#MOVIES
+
+INSERT INTO Movies (movie_id, autor, date_release, descricao, tags, title) VALUES (1, 'ds@test.com', dateof(now()), 'A day at the zoo', {'Zoo','Cute','Animals'}, 'Zoo Video');
+INSERT INTO Movies (movie_id, autor, date_release, descricao, tags, title) VALUES (2, 'user1@bot.com', dateof(now()), 'Made by a bot', {'Creepy','Automated'}, 'Creepy Automated Video');
+INSERT INTO Movies (movie_id, autor, date_release, descricao, tags, title) VALUES (2, 'user2@bot.com', dateof(now()), 'Made by a bot', {'Cute','Automated'}, 'Cute Automated Video');
+INSERT INTO Movies (movie_id, autor, date_release, descricao, tags, title) VALUES (3, 'user2@bot.com', dateof(now()), 'Made by a bot', {'Mindblowing','Automated'}, 'Mindblowing Automated Video');
+INSERT INTO Movies (movie_id, autor, date_release, descricao, tags, title) VALUES (4, 'user4@bot.com', dateof(now()), 'Made by a bot', {'Fantasy','Automated'}, 'Fantasy Automated Video');
+INSERT INTO Movies (movie_id, autor, date_release, descricao, tags, title) VALUES (5, 'user10@bot.com', dateof(now()), 'Made by a bot', {'Fitness','Automated'}, 'Fitness Automated Video');
+INSERT INTO Movies (movie_id, autor, date_release, descricao, tags, title) VALUES (6, 'user12@bot.com', dateof(now()), 'Made by a bot', {'NSFW','Automated'}, 'NSFW Automated Video');
+INSERT INTO Movies (movie_id, autor, date_release, descricao, tags, title) VALUES (7, 'user2@bot.com', dateof(now()), 'Made by a bot', {'Gaming','Automated'}, 'Gaming Automated Video');
+INSERT INTO Movies (movie_id, autor, date_release, descricao, tags, title) VALUES (8, 'user2@bot.com', dateof(now()), 'Made by a bot', {'Gaming','Automated'}, 'Gaming Automated Video 2');
+INSERT INTO Movies (movie_id, autor, date_release, descricao, tags, title) VALUES (9, 'user6@bot.com', dateof(now()), 'Made by a bot', {'Mindblowing','Automated'}, 'Mindblowing Automated Video 2');
+INSERT INTO Movies (movie_id, autor, date_release, descricao, tags, title) VALUES (10, 'ds@test.com', dateof(now()), 'The final video', {'Final'}, 'The end');
+
+cqlsh:cbd_aula3_4> SELECT * FROM Movies;
+
+ date_release                    | movie_id | autor          | descricao        | tags                         | title
+---------------------------------+----------+----------------+------------------+------------------------------+-------------------------------
+ 2021-12-15 15:09:38.873000+0000 |       10 |    ds@test.com |  The final video |                    {'Final'} |                       The end
+ 2021-12-15 15:09:38.239000+0000 |        3 |  user2@bot.com |    Made by a bot | {'Automated', 'Mindblowing'} |   Mindblowing Automated Video
+ 2021-12-15 15:09:38.217000+0000 |        1 |    ds@test.com | A day at the zoo |   {'Animals', 'Cute', 'Zoo'} |                     Zoo Video
+ 2021-12-15 15:09:38.229000+0000 |        2 |  user1@bot.com |    Made by a bot |      {'Automated', 'Creepy'} |        Creepy Automated Video
+ 2021-12-15 15:09:38.254000+0000 |        8 |  user2@bot.com |    Made by a bot |      {'Automated', 'Gaming'} |      Gaming Automated Video 2
+ 2021-12-15 15:09:38.249000+0000 |        6 | user12@bot.com |    Made by a bot |        {'Automated', 'NSFW'} |          NSFW Automated Video
+ 2021-12-15 15:09:38.242000+0000 |        4 |  user4@bot.com |    Made by a bot |     {'Automated', 'Fantasy'} |       Fantasy Automated Video
+ 2021-12-15 15:09:38.252000+0000 |        7 |  user2@bot.com |    Made by a bot |      {'Automated', 'Gaming'} |        Gaming Automated Video
+ 2021-12-15 15:09:38.246000+0000 |        5 | user10@bot.com |    Made by a bot |     {'Automated', 'Fitness'} |       Fitness Automated Video
+ 2021-12-15 15:09:38.235000+0000 |        2 |  user2@bot.com |    Made by a bot |        {'Automated', 'Cute'} |          Cute Automated Video
+ 2021-12-15 15:09:38.257000+0000 |        9 |  user6@bot.com |    Made by a bot | {'Automated', 'Mindblowing'} | Mindblowing Automated Video 2
+
+
+#PEOPLE_PER_MOVIE
+
+INSERT INTO People_per_Movie(movie_id, personid_role) VALUES (1, {3:'main actor', 5:'secondary actor'});
+INSERT INTO People_per_Movie(movie_id, personid_role) VALUES (2, {4:'main actor'});
+INSERT INTO People_per_Movie(movie_id, personid_role) VALUES (3, {1:'main actor', 3:'secondary actor'});
+INSERT INTO People_per_Movie(movie_id, personid_role) VALUES (4, {7:'main actor'});
+INSERT INTO People_per_Movie(movie_id, personid_role) VALUES (5, {15:'main actor'});
+INSERT INTO People_per_Movie(movie_id, personid_role) VALUES (6, {14:'main actor', 11:'secondary actor'});
+INSERT INTO People_per_Movie(movie_id, personid_role) VALUES (7, {2:'main actor'});
+INSERT INTO People_per_Movie(movie_id, personid_role) VALUES (8, {5:'main actor'});
+INSERT INTO People_per_Movie(movie_id, personid_role) VALUES (9, {5:'main actor'});
+INSERT INTO People_per_Movie(movie_id, personid_role) VALUES (10, {8:'main actor', 9:'secondary actor'});
+
+cqlsh:cbd_aula3_4> SELECT * FROM People_per_Movie;
+
+ movie_id | personid_role
+----------+-------------------------------------------
+        5 |                        {15: 'main actor'}
+       10 |   {8: 'main actor', 9: 'secondary actor'}
+        1 |   {3: 'main actor', 5: 'secondary actor'}
+        8 |                         {5: 'main actor'}
+        2 |                         {4: 'main actor'}
+        4 |                         {7: 'main actor'}
+        7 |                         {2: 'main actor'}
+        6 | {11: 'secondary actor', 14: 'main actor'}
+        9 |                         {5: 'main actor'}
+        3 |   {1: 'main actor', 3: 'secondary actor'}
+
+
+#MOVIES_PER_PERSON
+
+INSERT INTO Movies_per_Person(identification_number_person, movie_id) VALUES (1, [3]);
+INSERT INTO Movies_per_Person(identification_number_person, movie_id) VALUES (2, [7]);
+INSERT INTO Movies_per_Person(identification_number_person, movie_id) VALUES (3, [1, 3]);
+INSERT INTO Movies_per_Person(identification_number_person, movie_id) VALUES (4, [2]);
+INSERT INTO Movies_per_Person(identification_number_person, movie_id) VALUES (5, [1, 8, 9]);
+INSERT INTO Movies_per_Person(identification_number_person, movie_id) VALUES (6, []);
+INSERT INTO Movies_per_Person(identification_number_person, movie_id) VALUES (7, [4]);
+INSERT INTO Movies_per_Person(identification_number_person, movie_id) VALUES (8, [10]);
+INSERT INTO Movies_per_Person(identification_number_person, movie_id) VALUES (9, [10]);
+INSERT INTO Movies_per_Person(identification_number_person, movie_id) VALUES (10, []);
+INSERT INTO Movies_per_Person(identification_number_person, movie_id) VALUES (11, [6]);
+INSERT INTO Movies_per_Person(identification_number_person, movie_id) VALUES (12, []);
+INSERT INTO Movies_per_Person(identification_number_person, movie_id) VALUES (13, []);
+INSERT INTO Movies_per_Person(identification_number_person, movie_id) VALUES (14, [6]);
+INSERT INTO Movies_per_Person(identification_number_person, movie_id) VALUES (15, [5]);
+INSERT INTO Movies_per_Person(identification_number_person, movie_id) VALUES (16, []);
+
+cqlsh:cbd_aula3_4> SELECT * FROM Movies_per_Person;
+
+ identification_number_person | movie_id
+------------------------------+-----------
+                            5 | [1, 8, 9]
+                           10 |      null
+                           16 |      null
+                           13 |      null
+                           11 |       [6]
+                            1 |       [3]
+                            8 |      [10]
+                            2 |       [7]
+                            4 |       [2]
+                           15 |       [5]
+                            7 |       [4]
+                            6 |      null
+                            9 |      [10]
+                           14 |       [6]
+                           12 |      null
+                            3 |    [1, 3]
+
+
+# RATING
+
+INSERT INTO Rating(rating, movie_id, rating_id) VALUES (1, 1, 1);
+INSERT INTO Rating(rating, movie_id, rating_id) VALUES (2, 2, 2);
+INSERT INTO Rating(rating, movie_id, rating_id) VALUES (3, 3, 3);
+INSERT INTO Rating(rating, movie_id, rating_id) VALUES (4, 4, 4);
+INSERT INTO Rating(rating, movie_id, rating_id) VALUES (5, 5, 5);
+INSERT INTO Rating(rating, movie_id, rating_id) VALUES (6, 6, 6);
+INSERT INTO Rating(rating, movie_id, rating_id) VALUES (7, 7, 7);
+INSERT INTO Rating(rating, movie_id, rating_id) VALUES (8, 8, 8);
+INSERT INTO Rating(rating, movie_id, rating_id) VALUES (9, 9, 9);
+INSERT INTO Rating(rating, movie_id, rating_id) VALUES (10, 10, 10);
+
+cqlsh:cbd_aula3_4> SELECT * FROM Rating;
+
+ movie_id | rating | rating_id
+----------+--------+-----------
+        5 |      5 |         5
+       10 |     10 |        10
+        1 |      1 |         1
+        8 |      8 |         8
+        2 |      2 |         2
+        4 |      4 |         4
+        7 |      7 |         7
+        6 |      6 |         6
+        9 |      9 |         9
+        3 |      3 |         3
+
+
+### JSON ###
+cqlsh:cbd_aula3_4> DESCRIBE Tables
+
+movies  movies_per_person  people_per_movie  person  rating
+
+cqlsh:cbd_aula3_4> SELECT JSON * FROM Person;
+
+ [json]
+------------------------------------------------------------------------------------------------------
+    {"email": "user8@bot.com", "identification_number": 9, "nome": "Bot8", "phone_number": 911111108}
+    {"email": "user1@bot.com", "identification_number": 2, "nome": "Bot1", "phone_number": 911111101}
+    {"email": "user5@bot.com", "identification_number": 6, "nome": "Bot5", "phone_number": 911111105}
+ {"email": "user10@bot.com", "identification_number": 11, "nome": "Bot10", "phone_number": 911111110}
+ {"email": "user11@bot.com", "identification_number": 12, "nome": "Bot11", "phone_number": 911111111}
+ {"email": "user13@bot.com", "identification_number": 14, "nome": "Bot13", "phone_number": 911111113}
+ {"email": "user14@bot.com", "identification_number": 15, "nome": "Bot14", "phone_number": 911111114}
+    {"email": "user2@bot.com", "identification_number": 3, "nome": "Bot2", "phone_number": 911111102}
+ {"email": "user15@bot.com", "identification_number": 16, "nome": "Bot15", "phone_number": 911111115}
+   {"email": "user9@bot.com", "identification_number": 10, "nome": "Bot9", "phone_number": 911111109}
+    {"email": "user4@bot.com", "identification_number": 5, "nome": "Bot4", "phone_number": 911111104}
+  {"email": "flip@test.com", "identification_number": 1, "nome": "Filipe", "phone_number": 911111100}
+    {"email": "user6@bot.com", "identification_number": 7, "nome": "Bot6", "phone_number": 911111106}
+    {"email": "user7@bot.com", "identification_number": 8, "nome": "Bot7", "phone_number": 911111107}
+    {"email": "user3@bot.com", "identification_number": 4, "nome": "Bot3", "phone_number": 911111103}
+ {"email": "user12@bot.com", "identification_number": 13, "nome": "Bot12", "phone_number": 911111112}
+
+cqlsh:cbd_aula3_4> SELECT JSON * FROM Movies;
+
+[json]
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                                         {"date_release": "2021-12-15 15:09:38.873Z", "movie_id": 10, "autor": "ds@test.com", "descricao": "The final video", "tags": ["Final"], "title": "The end"}
+   {"date_release": "2021-12-15 15:09:38.239Z", "movie_id": 3, "autor": "user2@bot.com", "descricao": "Made by a bot", "tags": ["Automated", "Mindblowing"], "title": "Mindblowing Automated Video"}
+                      {"date_release": "2021-12-15 15:09:38.217Z", "movie_id": 1, "autor": "ds@test.com", "descricao": "A day at the zoo", "tags": ["Animals", "Cute", "Zoo"], "title": "Zoo Video"}
+             {"date_release": "2021-12-15 15:09:38.229Z", "movie_id": 2, "autor": "user1@bot.com", "descricao": "Made by a bot", "tags": ["Automated", "Creepy"], "title": "Creepy Automated Video"}
+           {"date_release": "2021-12-15 15:09:38.254Z", "movie_id": 8, "autor": "user2@bot.com", "descricao": "Made by a bot", "tags": ["Automated", "Gaming"], "title": "Gaming Automated Video 2"}
+                {"date_release": "2021-12-15 15:09:38.249Z", "movie_id": 6, "autor": "user12@bot.com", "descricao": "Made by a bot", "tags": ["Automated", "NSFW"], "title": "NSFW Automated Video"}
+           {"date_release": "2021-12-15 15:09:38.242Z", "movie_id": 4, "autor": "user4@bot.com", "descricao": "Made by a bot", "tags": ["Automated", "Fantasy"], "title": "Fantasy Automated Video"}
+             {"date_release": "2021-12-15 15:09:38.252Z", "movie_id": 7, "autor": "user2@bot.com", "descricao": "Made by a bot", "tags": ["Automated", "Gaming"], "title": "Gaming Automated Video"}
+          {"date_release": "2021-12-15 15:09:38.246Z", "movie_id": 5, "autor": "user10@bot.com", "descricao": "Made by a bot", "tags": ["Automated", "Fitness"], "title": "Fitness Automated Video"}
+                 {"date_release": "2021-12-15 15:09:38.235Z", "movie_id": 2, "autor": "user2@bot.com", "descricao": "Made by a bot", "tags": ["Automated", "Cute"], "title": "Cute Automated Video"}
+ {"date_release": "2021-12-15 15:09:38.257Z", "movie_id": 9, "autor": "user6@bot.com", "descricao": "Made by a bot", "tags": ["Automated", "Mindblowing"], "title": "Mindblowing Automated Video 2"}
+
+cqlsh:cbd_aula3_4> SELECT JSON * FROM movies_per_person;
+
+ [json]
+------------------------------------------------------------
+ {"identification_number_person": 5, "movie_id": [1, 8, 9]}
+     {"identification_number_person": 10, "movie_id": null}
+     {"identification_number_person": 16, "movie_id": null}
+     {"identification_number_person": 13, "movie_id": null}
+      {"identification_number_person": 11, "movie_id": [6]}
+       {"identification_number_person": 1, "movie_id": [3]}
+      {"identification_number_person": 8, "movie_id": [10]}
+       {"identification_number_person": 2, "movie_id": [7]}
+       {"identification_number_person": 4, "movie_id": [2]}
+      {"identification_number_person": 15, "movie_id": [5]}
+       {"identification_number_person": 7, "movie_id": [4]}
+      {"identification_number_person": 6, "movie_id": null}
+      {"identification_number_person": 9, "movie_id": [10]}
+      {"identification_number_person": 14, "movie_id": [6]}
+     {"identification_number_person": 12, "movie_id": null}
+    {"identification_number_person": 3, "movie_id": [1, 3]}
+
+cqlsh:cbd_aula3_4> SELECT JSON * FROM people_per_movie;
+
+ [json]
+---------------------------------------------------------------------------------
+                          {"movie_id": 5, "personid_role": {"15": "main actor"}}
+  {"movie_id": 10, "personid_role": {"8": "main actor", "9": "secondary actor"}}
+   {"movie_id": 1, "personid_role": {"3": "main actor", "5": "secondary actor"}}
+                           {"movie_id": 8, "personid_role": {"5": "main actor"}}
+                           {"movie_id": 2, "personid_role": {"4": "main actor"}}
+                           {"movie_id": 4, "personid_role": {"7": "main actor"}}
+                           {"movie_id": 7, "personid_role": {"2": "main actor"}}
+ {"movie_id": 6, "personid_role": {"11": "secondary actor", "14": "main actor"}}
+                           {"movie_id": 9, "personid_role": {"5": "main actor"}}
+   {"movie_id": 3, "personid_role": {"1": "main actor", "3": "secondary actor"}}
+
+
+cqlsh:cbd_aula3_4> SELECT JSON * FROM rating;
+
+ [json]
+-------------------------------------------------
+    {"movie_id": 5, "rating": 5, "rating_id": 5}
+ {"movie_id": 10, "rating": 10, "rating_id": 10}
+    {"movie_id": 1, "rating": 1, "rating_id": 1}
+    {"movie_id": 8, "rating": 8, "rating_id": 8}
+    {"movie_id": 2, "rating": 2, "rating_id": 2}
+    {"movie_id": 4, "rating": 4, "rating_id": 4}
+    {"movie_id": 7, "rating": 7, "rating_id": 7}
+    {"movie_id": 6, "rating": 6, "rating_id": 6}
+    {"movie_id": 9, "rating": 9, "rating_id": 9}
+    {"movie_id": 3, "rating": 3, "rating_id": 3}
+
+
+##### DELETE + UPDATE ######
+UPDATE movies_per_person SET movie_id=[1, 2, 3] WHERE identification_number_person=6;
+UPDATE people_per_movie SET personid_role=personid_role+{6:'figurante'} WHERE movie_id in (1,2,3);
+UPDATE person SET nome='Maestro' WHERE identification_number=3;
+UPDATE movies SET autor='Borges' WHERE movie_id=8;
+UPDATE movies_per_person SET movie_id=[6, 10] WHERE identification_number_person=12;
+UPDATE people_per_movie SET personid_role=personid_role+{12:'director'} WHERE movie_id in (6,10);
+
+DELETE movie_id[1] FROM movies_per_person WHERE identification_number_person=6;
+DELETE personid_role[1] FROM people_per_movie WHERE movie_id=2;
+DELETE movie_id FROM movies_per_person WHERE identification_number_person=3;
+DELETE personid_role FROM people_per_movie WHERE movie_id in (1,3);
+DELETE nome FROM person WHERE identification_number=16;
+
+
+##### QUERIES ######
+
+SELECT * FROM movies_per_person;
+SELECT * FROM movies_per_person WHERE identification_number_person=5;
+SELECT * FROM movies WHERE date_release>'2021-12-15 15:09:38' LIMIT 3 ALLOW FILTERING;
+SELECT * FROM person;
+SELECT * FROM movies;
+SELECT * FROM rating;
+SELECT * FROM person WHERE email='user1@bot.com' ORDER BY identification_number ALLOW FILTERING;
+SELECT avg(rating) as Average, count(rating) as NumReviews FROM Rating WHERE movie_id = 9;
+SELECT count(movie_id) as movies FROM movies_per_person;
+SELECT personid_role, movie_id FROM people_per_movie WHERE movie_id in (1,2,3,4);
